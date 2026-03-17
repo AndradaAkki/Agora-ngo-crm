@@ -24,15 +24,12 @@ The initial phase of this project focused on high-fidelity wireframing and user 
 
 ### 1. Master Dashboard
 The central hub for mass outreach, filtering by event, and quick status checks.
-![Dashboard View]([Link to your dashboard image here, e.g., ./assets/dashboard.png])
 
 ### 2. Firm Profile & History
 The detailed view securing the institutional memory and current sponsorship status.
-![Firm Profile View]([Link to your profile image here, e.g., ./assets/firm-profile.png])
 
 ### 3. Authentication Flow
 Role-selection and secure login portal.
-![Login View]([Link to your login image here, e.g., ./assets/login.png])
 
 ## Planned Tech Stack
 *(This section will be updated as the implementation phase begins.)*
