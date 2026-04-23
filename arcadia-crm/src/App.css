@@ -1,0 +1,500 @@
+:root {
+  --primary-blue: #514EF3;
+  --dark-navy: #092C4C;
+  --text-main: #526477;
+  --text-light: #7E92A2;
+  --bg-light: #F6FAFD;
+  --border-color: #EAEEF4;
+  
+  --status-accepted-bg: #d2f7ef;
+  --status-accepted-text: #2DC8A8;
+  --status-rejected-bg: #FBEAEA;
+  --status-rejected-text: #FE8084;
+  --status-pending-bg: #FFF4E5;
+  --status-pending-text: #FFC357;
+
+  --font-main: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-light);
+  font-family: var(--font-main);
+  color: var(--dark-navy);
+  overflow-x: hidden;
+}
+
+/* --- Layout --- */
+
+.dashboard-container {
+  display: flex; /* Key for side-by-side layout */
+  min-height: 100vh;
+  width: 100vw;
+}
+
+.sidebar {
+  width: 80px;
+  background: white;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.main-content {
+  flex: 1; /* Takes up remaining space */
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header & Buttons --- */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between; /* Pushes title left, buttons right */
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 70px; /* As requested */
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(81, 78, 243, 0.3);
+}
+
+/* --- Table Styles --- */
+
+.table-wrapper {
+  margin-top: 20px;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px; 
+}
+
+.custom-table th {
+  text-align: left;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 24px;
+}
+
+.table-row {
+  background: white;
+  transition: transform 0.2s ease;
+}
+
+.table-row td {
+  padding: 20px 24px;
+}
+
+.table-row td:first-child { border-radius: 12px 0 0 12px; }
+.table-row td:last-child { border-radius: 0 12px 12px 0; }
+
+/* --- Icons & Badges --- */
+
+.menu-icon {
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.menu-icon:hover, .menu-icon.active {
+  color: var(--primary-blue);
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.status-accepted { background: var(--status-accepted-bg); color: var(--status-accepted-text); }
+.status-rejected { background: var(--status-rejected-bg); color: var(--status-rejected-text); }
+.status-in-progress { background: var(--status-pending-bg); color: var(--status-pending-text); }
+
+/* --- Animations --- */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.7s ease-out forwards;
+}
+
+/* --- Stats & Filters --- */
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.total-count {
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-secondary {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 70px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-outline {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 70px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* --- Table Text Fixes --- */
+.firm-name-cell {
+  color: var(--dark-navy);
+  font-size: 15px;
+}
+
+.delete-text-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.profile-icon-btn {
+  background: #f1f3f5;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #495057;
+}
+
+/* --- Pagination --- */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.pag-number {
+  background: white;
+  border: 1px solid var(--border-color);
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.pag-number.active {
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+}
+
+.pag-arrow {
+  background: #343a40;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* --- Landing Page --- */
+.landing-container {
+  background-color: #0d1117; /* Dark navy/black */
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 80px 10vw;
+  overflow: hidden; /* Prevents the tilted image from creating scrollbars */
+  position: relative;
+}
+
+.landing-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex: 1;
+}
+
+.landing-text-section {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+  z-index: 2; /* Keeps text above the image if they overlap */
+}
+
+.landing-image-section {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+/* The tilted Figma image effect */
+.hero-image {
+  width: 130%; /* Makes it larger to bleed off the edge */
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: -10px 20px 40px rgba(0, 0, 0, 0.4);
+  transform: rotate(8deg) translateY(-30px) translateX(80px);
+  transition: transform 0.3s ease;
+}
+
+.landing-btn {
+  background: white;
+  color: #0d1117;
+  padding: 14px 40px;
+  border-radius: 70px;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: transform 0.2s;
+}
+
+.landing-btn:hover {
+  transform: scale(1.05);
+}
+
+/* --- Modal Overlay --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 30px 40px;
+  width: 500px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-light);
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+/* --- Firm Profile Specifics --- */
+
+.profile-hero {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 25px;
+  border: 1px solid var(--border-color);
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.icon-btn-round {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn-round:hover {
+  color: var(--dark-navy);
+  border-color: var(--dark-navy);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  grid-template-rows: 1fr 1fr; /* Splits the remaining height equally */
+  gap: 20px;
+  flex: 1; /* Tells the grid to fill the exact remaining space */
+  min-height: 0; /* Prevents the grid from overflowing the window */
+  padding-bottom: 20px;
+}
+
+.profile-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; /* Add this! It stops the card from stretching the page */
+}
+
+.profile-card-header {
+  padding: 15px 20px;
+  font-weight: 700;
+  color: var(--dark-navy);
+  border-bottom: 1px solid var(--border-color);
+  background: white;
+}
+
+.profile-card-body {
+  flex: 1;
+  overflow-y: auto; /* This is what makes the section scrollable */
+  padding: 20px;
+}
+
+/* Custom scrollbar for a cleaner look */
+.profile-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+.profile-card-body::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 4px;
+}
+
+/* --- Delete Modal Buttons --- */
+.btn-danger {
+  background-color: #F28B82; /* Salmon red from Figma */
+  color: white;
+  border: none;
+  padding: 10px 32px;
+  border-radius: 70px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-danger:hover {
+  transform: scale(1.05);
+  background-color: #E57373;
+}
+
+.btn-cancel {
+  background: none;
+  border: none;
+  color: #092C4C;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 24px;
+}

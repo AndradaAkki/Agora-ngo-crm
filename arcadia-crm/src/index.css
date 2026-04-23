@@ -1,0 +1,21 @@
+/* src/index.css */
+:root {
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  display: block; /* Overrides Vite's 'place-items: center' */
+  min-width: 320px;
+  min-height: 100vh;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
