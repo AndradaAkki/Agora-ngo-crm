@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production builds
+dist/
+build/
+
+# Vite Cache
+.vite/
+
+# Environment variables (Never commit secret keys!)
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
