@@ -23,7 +23,7 @@ function AddFirm({ onAddFirm, onClose }) {
         details: 'Newly added from dashboard.'
       };
       
-      onAddFirm(newFirm); // Sends data to App.jsx offline queue
+      onAddFirm(newFirm);
       onClose(); 
     }
   };
