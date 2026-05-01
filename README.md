@@ -39,3 +39,5 @@ Role-selection and secure login portal.
 
 ## Current Status
 Currently in the **Systems for Design and Implementation** phase. UI/UX prototyping is complete. Database schema design and backend implementation are up next.
+
+- [ ] Run npm audit fix --force and test for breaking changes before production.
