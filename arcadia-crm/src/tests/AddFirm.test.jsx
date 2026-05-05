@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { test, expect, vi } from 'vitest';
-import AddFirm from './AddFirm';
+import AddFirm from '../AddFirm';
 
 test('interacts with all fields and creates a firm', () => {
   const mockSetFirms = vi.fn();

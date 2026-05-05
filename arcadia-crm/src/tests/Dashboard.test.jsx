@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { test, expect, vi } from 'vitest';
-import Dashboard from './Dashboard';
+import Dashboard from '../Dashboard';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {

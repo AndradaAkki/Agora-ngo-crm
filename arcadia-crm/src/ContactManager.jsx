@@ -1,93 +1,16 @@
-import { useState } from 'react';
+import React from 'react';
 import { Plus, Trash } from 'lucide-react';
-
-import { useMutation } from '@apollo/client/react';
-import { gql } from '@apollo/client/core';
+import { useContactManagerLogic } from './useContactManagerLogic';
 import './App.css';
 
-const ADD_CONTACT = gql`
-  mutation AddContact($firmId: ID!, $name: String!, $email: String!, $position: String, $phone: String) {
-    addContact(firmId: $firmId, name: $name, email: $email, position: $position, phone: $phone) { id }
-  }
-`;
-
-const UPDATE_CONTACT = gql`
-  mutation UpdateContact($firmId: ID!, $contactId: ID!, $name: String, $email: String, $position: String, $phone: String) {
-    updateContact(firmId: $firmId, contactId: $contactId, name: $name, email: $email, position: $position, phone: $phone) { id }
-  }
-`;
-
-const DELETE_CONTACT = gql`
-  mutation DeleteContact($firmId: ID!, $contactId: ID!) {
-    deleteContact(firmId: $firmId, contactId: $contactId) { id }
-  }
-`;
-
-// Added onUpdateFirm to your props so it can instantly update the UI
 function ContactManager({ firm, onUpdateFirm, onClose }) {
-  const profileContacts = firm.contacts || [];
-  const [editableContacts, setEditableContacts] = useState([...profileContacts]);
-
-  
-  const [addContact] = useMutation(ADD_CONTACT);
-  const [updateContact] = useMutation(UPDATE_CONTACT);
-  const [deleteContact] = useMutation(DELETE_CONTACT);
-
-  const handleCellChange = (id, field, value) => {
-    setEditableContacts(editableContacts.map(c => 
-      c.id === id ? { ...c, [field]: value } : c
-    ));
-  };
-
-  const handleAddContact = () => {
-    const newContact = { 
-      id: Date.now(), 
-      name: '', 
-      position: '', 
-      email: '', 
-      phone: '', 
-      isPrimary: editableContacts.length === 0
-    };
-    setEditableContacts([...editableContacts, newContact]);
-  };
-
-  const handleDeleteContact = (id) => {
-    setEditableContacts(editableContacts.filter(c => c.id !== id));
-  };
-
-  const handleSaveContacts = async () => {
-    
-    if (onUpdateFirm) {
-        onUpdateFirm({ ...firm, contacts: editableContacts });
-    }
-
-    ase
-    const currentIds = editableContacts.map(c => c.id);
-    const deletedContacts = profileContacts.filter(c => !currentIds.includes(c.id));
-    const addedContacts = editableContacts.filter(c => typeof c.id === 'number'); // New ones have timestamp numbers
-    const updatedContacts = editableContacts.filter(c => typeof c.id === 'string'); // Old ones have string IDs from GraphQL
-
-    try {
-      // deletions
-      for (const c of deletedContacts) {
-        await deleteContact({ variables: { firmId: firm.id, contactId: String(c.id) }});
-      }
-      //  additions
-      for (const c of addedContacts) {
-        if (c.name) { 
-          await addContact({ variables: { firmId: firm.id, name: c.name, email: c.email || "no-email@test.com", position: c.position, phone: c.phone }});
-        }
-      }
-      // updates
-      for (const c of updatedContacts) {
-        await updateContact({ variables: { firmId: firm.id, contactId: String(c.id), name: c.name, email: c.email, position: c.position, phone: c.phone }});
-      }
-    } catch (e) {
-      console.error("Error saving contacts to backend:", e);
-    }
-    
-    onClose();
-  };
+  const {
+    editableContacts,
+    handleCellChange,
+    handleAddContact,
+    handleDeleteContact,
+    handleSaveContacts
+  } = useContactManagerLogic({ firm, onUpdateFirm, onClose });
 
   return (
     <div className="modal-overlay">

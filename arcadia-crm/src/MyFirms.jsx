@@ -1,26 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter } from 'lucide-react';
+import { useMyFirmsLogic } from './useMyFirmsLogic';
 import './App.css';
 
 function MyFirms({ firms }) {
-  const navigate = useNavigate();
-  
-  // 1. Simulate our logged-in user (Later, this will come from your Auth Context/Login screen)
-  const currentUser = "Alex Thompson";
-
-  // 2. Filter the master list to ONLY show firms assigned to this specific user
-  const myFirmsList = firms.filter(firm => firm.assignedCD === currentUser); 
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; 
-  
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentFirms = myFirmsList.slice(indexOfFirstItem, indexOfLastItem);
-  
-  // Math.max ensures that even if the list is completely empty, we don't get "Page 1 of 0"
-  const totalPages = Math.max(1, Math.ceil(myFirmsList.length / itemsPerPage));
+  const {
+    navigate,
+    myFirmsList,
+    currentFirms,
+    currentPage,
+    setCurrentPage,
+    totalPages
+  } = useMyFirmsLogic({ firms });
 
   return (
     <div className="dashboard-container">
@@ -97,7 +88,8 @@ function MyFirms({ firms }) {
                   <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
                   <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
                   <td>
-                    <span className={`status-badge status-${firm.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {/* Am adaugat un fallback safe pentru status, in cazul in care vine null din baza de date */}
+                    <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
                       {firm.status}
                     </span>
                   </td>

@@ -6,11 +6,27 @@ const typeDefs = `#graphql
   type Firm {
     id: ID!
     name: String!
-    email: String!
-    status: String!
+    email: String
+    status: String
     details: String
     assignedCD: String
     pausedUntil: String
+    contracts: [Contract]
+    history: [History]
+  }
+
+  type Contract {
+    id: ID!
+    status: String
+    name: String
+    steps: [String]
+  }
+
+  type History {
+    id: ID!
+    type: String
+    details: String
+    timestamp: String
   }
 
   type PaginatedFirms {
@@ -25,22 +41,22 @@ const typeDefs = `#graphql
   }
 
   type Mutation {
-    addFirm(name: String!, email: String!, status: String): Firm!
-    updateFirm(id: ID!, name: String, email: String, status: String, details: String): Firm!
-    deleteFirm(id: ID!): Firm!
+    addFirm(name: String!, email: String, status: String): Firm!
+updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String): Firm!    deleteFirm(id: ID!): Firm!
   }
 
   type Subscription {
     firmAdded: Firm!
   }
+
   type User {
-  id: ID!
-  username: String!
-  email: String!
-  displayName: String
-  role: String
-  isAdmin: Boolean!  # Add it here
-}
+    id: ID!
+    username: String!
+    email: String!
+    displayName: String
+    role: String
+    isAdmin: Boolean!
+  }
 `;
 
 // 2. The Resolvers (Where Prisma talks to PostgreSQL)
@@ -49,25 +65,51 @@ const resolvers = {
     getFirms: async (_, { page = 1, limit = 10 }, { prisma }) => {
       const skip = (page - 1) * limit;
       
-      // Prisma fetches the data and the total count simultaneously
       const [firms, totalItems] = await prisma.$transaction([
-        prisma.firm.findMany({ skip, take: limit, orderBy: { id: 'desc' } }),
+        prisma.firm.findMany({ 
+          skip, 
+          take: limit,
+          // Include the relational tables from Prisma
+          include: {
+            history: true,
+            contracts: {
+              include: {
+                event: true 
+              }
+            }
+          }
+        }),
         prisma.firm.count()
       ]);
       
+      // Map the complex Prisma relations to the simple GraphQL schema
+      const formattedFirms = firms.map(firm => ({
+        ...firm,
+        contracts: firm.contracts.map(c => ({
+          id: c.id,
+          status: c.status,
+          name: c.event?.name || "Unknown Event", 
+          steps: [] 
+        })),
+        history: firm.history.map(h => ({
+          id: h.id,
+          type: h.details.split(' ')[0] || 'Log', 
+          details: h.details,
+          timestamp: h.timestamp ? h.timestamp.toISOString() : null
+        }))
+      }));
+
       return { 
         totalItems, 
         currentPage: page, 
         totalPages: Math.ceil(totalItems / limit), 
-        // Prisma uses Ints for IDs, but GraphQL expects Strings for IDs. We convert them here.
-        data: firms.map(firm => ({ ...firm, id: firm.id.toString() })) 
+        data: formattedFirms 
       };
     }
   },
   
   Mutation: {
     addFirm: async (_, args, { prisma }) => {
-      // Prisma saves to the database
       const newFirm = await prisma.firm.create({
         data: { 
           name: args.name, 
@@ -76,26 +118,23 @@ const resolvers = {
         }
       });
       
-      const firmToReturn = { ...newFirm, id: newFirm.id.toString() };
-      
-      // Broadcast to Apollo Subscriptions in React
-      pubsub.publish('FIRM_ADDED', { firmAdded: firmToReturn });
-      return firmToReturn;
+      pubsub.publish('FIRM_ADDED', { firmAdded: newFirm });
+      return newFirm;
     },
     
     updateFirm: async (_, { id, ...data }, { prisma }) => {
       const updatedFirm = await prisma.firm.update({
-        where: { id: parseInt(id) },
+        where: { id: id }, // ID is already a UUID string
         data: data
       });
-      return { ...updatedFirm, id: updatedFirm.id.toString() };
+      return updatedFirm;
     },
     
     deleteFirm: async (_, { id }, { prisma }) => {
       const deletedFirm = await prisma.firm.delete({
-        where: { id: parseInt(id) }
+        where: { id: id } // ID is already a UUID string
       });
-      return { ...deletedFirm, id: deletedFirm.id.toString() };
+      return deletedFirm;
     }
   },
 

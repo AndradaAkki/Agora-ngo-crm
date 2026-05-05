@@ -1,110 +1,24 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@apollo/client/react';
-import { gql } from '@apollo/client/core';
+import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Plus, Users, Copy, Activity, Table as TableIcon, PieChart as ChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as BarTooltip } from 'recharts';
+import { useEventsStatsLogic } from './useEventsStatsLogic'; // <-- Importăm logica
 import './App.css';
-const GET_ALL_EVENTS_DATA = gql`
-  query GetAllEventsData {
-    getFirms(page: 1, limit: 1000) {
-      data {
-        id
-        name
-        status
-        assignedCD
-        email
-        contracts { name steps }
-        history { type }
-      }
-    }
-  }
-`;
 
 function EventsStats() {
- 
-  const navigate = useNavigate();
-  const [selectedEvent, setSelectedEvent] = useState('All Events');
-  const [viewType, setViewType] = useState('chart');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [newEventData, setNewEventData] = useState({ name: '', date: '', description: '' });
-  const [customEvents, setCustomEvents] = useState([]);
+  // Conectăm UI-ul la Logică
+  const {
+    navigate, loading, error,
+    selectedEvent, setSelectedEvent,
+    viewType, setViewType,
+    isAddModalOpen, setIsAddModalOpen,
+    isDeleteModalOpen, setIsDeleteModalOpen,
+    newEventData, setNewEventData,
+    availableEvents, filteredFirms,
+    pieData, activityData,
+    handleAddEvent, handleDeleteEvent
+  } = useEventsStatsLogic();
 
-
-  // Fetch all firms directly from Apollo
-  const { data, loading, error } = useQuery(GET_ALL_EVENTS_DATA, {
-    fetchPolicy: 'network-only' // Ensures fresh data for accurate stats
-  });
-
-  
   if (error) return <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>Error loading data: {error.message}</div>;
-
-  const firms = data?.getFirms?.data || [];
-  
- 
-
-  // --- DATA PROCESSING ---
-  const availableEvents = useMemo(() => {
-    const events = new Set(customEvents);
-    firms.forEach(firm => {
-      if (firm.contracts) {
-        firm.contracts.forEach(contract => events.add(contract.name));
-      }
-    });
-    return ['All Events', ...Array.from(events)];
-  }, [firms, customEvents]);
-
-  const filteredFirms = useMemo(() => {
-    if (selectedEvent === 'All Events') return firms;
-    return firms.filter(firm =>
-      firm.contracts && firm.contracts.some(c => c.name === selectedEvent)
-    );
-  }, [firms, selectedEvent]);
-
-  // Pie Chart Data
-  const acceptedCount = filteredFirms.filter(f => f.status === 'Accepted').length;
-  const waitingCount = filteredFirms.filter(f => f.status === 'In Progress').length;
-  const refusedCount = filteredFirms.filter(f => f.status === 'Rejected').length;
-  
-  const PIE_COLORS = { Accepted: '#2DC8A8', Waiting: '#FFC357', Refused: '#FE8084' };
-  const pieData = [
-    { name: 'Accepted', value: acceptedCount, color: PIE_COLORS.Accepted },
-    { name: 'Waiting', value: waitingCount, color: PIE_COLORS.Waiting },
-    { name: 'Refused', value: refusedCount, color: PIE_COLORS.Refused },
-  ];
-
-  // Bar Chart Data
-  const activityData = useMemo(() => {
-    const counts = {};
-    filteredFirms.forEach(firm => {
-      if (firm.history) {
-        firm.history.forEach(log => {
-          counts[log.type] = (counts[log.type] || 0) + 1;
-        });
-      }
-    });
-    return Object.keys(counts).map(key => ({
-      name: key,
-      actions: counts[key]
-    })).sort((a, b) => b.actions - a.actions); 
-  }, [filteredFirms]);
-
-  // --- HANDLERS ---
-  const handleAddEvent = () => {
-    if (newEventData.name.trim() !== '') {
-      setCustomEvents([...customEvents, newEventData.name]);
-      setSelectedEvent(newEventData.name);
-      setNewEventData({ name: '', date: '', description: '' });
-      setIsAddModalOpen(false);
-    }
-  };
-
-  const handleDeleteEvent = () => {
-    // In a real app, you would delete from DB here. For now, we just reset the view.
-    setSelectedEvent('All Events');
-    setIsDeleteModalOpen(false);
-  };
 
   return (
     <div className="dashboard-container">

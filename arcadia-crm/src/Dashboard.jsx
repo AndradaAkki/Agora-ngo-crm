@@ -1,24 +1,22 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home } from 'lucide-react';
-import './App.css';
+import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter, Plus } from 'lucide-react';
+import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
+import './App.css';
 
-function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
-  const navigate = useNavigate();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-
-  // INFINITE SCROLL
-  const handleScroll = (e) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.target;
-   
-    if (scrollHeight - scrollTop <= clientHeight + 50) {
-      if (hasMore) {
-        loadMoreFirms();
-      }
-    }
-  };
+function Dashboard({ firms, onAddFirm }) {
+  const {
+    navigate,
+    isAddModalOpen,
+    setIsAddModalOpen,
+    currentFirms,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    handleAddFirm
+  } = useDashboardLogic({ firms, onAddFirm });
 
   return (
     <div className="dashboard-container">
@@ -35,7 +33,7 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
           <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
           <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
           <Bell className="menu-icon" />
-          <Settings className="menu-icon" />
+          <Settings className="menu-icon" onClick={() => navigate('/profile')} title="Profile Settings" />
         </nav>
       </aside>
 
@@ -43,11 +41,14 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
         <header className="dashboard-header">
           <h1 style={{ color: '#092C4C', margin: 0 }}>Dashboard - all companies</h1>
           <div className="header-right">
-            <button className="btn-primary" onClick={() => setIsAddModalOpen(true)}>
-                Add New Company +
+            {/* Folosim clasa ta existenta .btn-primary care are deja umbra si hover-ul dorit */}
+            <button className="btn-primary" onClick={() => setIsAddModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Add New Company <Plus size={16} />
             </button>
             <div className="header-icons">
-              <Search className="menu-icon" size={22} />
+              <button className="icon-btn-round" style={{ width: '45px', height: '45px' }}>
+                <Search size={20} color="#7E92A2" />
+              </button>
               <img 
                 src="https://i.pravatar.cc/150?u=andra" 
                 alt="User" 
@@ -60,20 +61,23 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
         </header>
 
         <div className="stats-bar">
-          <p className="total-count">Total: <strong>{firms.length} companies</strong></p>
+          <p className="total-count" style={{ fontWeight: '700', color: '#092C4C', fontSize: '15px' }}>
+            Total: {totalItems} companies
+          </p>
           <div className="filter-group">
-             <button className="btn-secondary">Mass Mail</button>
-             <button className="btn-outline">Event: CariereInIT</button>
-             <button className="btn-outline">Filter</button>
+             <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <Mail size={16} /> Mass Mail
+             </button>
+             <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               Event: CariereInIT <ChevronDown size={16} color="#7E92A2" />
+             </button>
+             <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               Filter <Filter size={16} color="#7E92A2" />
+             </button>
           </div>
         </div>
 
-        {/* The onScroll event and fixed height are required for the infinite scroll to detect the bottom */}
-        <div 
-          className="table-wrapper" 
-          onScroll={handleScroll} 
-          style={{ maxHeight: '65vh', overflowY: 'auto' }}
-        >
+        <div className="table-wrapper">
           <table className="custom-table">
             <thead>
               <tr>
@@ -86,8 +90,7 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
               </tr>
             </thead>
             <tbody>
-              {/* Notice we map over ALL 'firms' now, not 'currentFirms' */}
-              {firms.map((firm) => (
+              {currentFirms.map((firm) => (
                 <tr key={firm.id} className="table-row">
                   <td className="firm-name-cell"><strong>{firm.name}</strong></td>
                   <td style={{ color: '#526477', fontSize: '14px' }}>{firm.contactName || 'N/A'}</td>
@@ -96,41 +99,41 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
                   
                   <td>
                     <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                      {firm.status}
+                      {firm.status ? firm.status.toUpperCase() : 'UNKNOWN'}
                     </span>
                   </td>
                   <td>
                     <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>
-                      <LogOut size={18} />
+                      <LogOut size={18} color="#7E92A2"/>
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          
-          {/* Visual indicator for infinite scrolling */}
-          {hasMore && (
-            <div style={{ textAlign: 'center', padding: '15px', color: '#526477', fontWeight: 'bold' }}>
-              Loading more companies...
-            </div>
-          )}
-          {!hasMore && firms.length > 0 && (
-            <div style={{ textAlign: 'center', padding: '15px', color: '#ccc', fontSize: '12px' }}>
-              End of list
-            </div>
-          )}
+        </div>
+
+        {/* Paginare folosind clasele tale din CSS */}
+        <div className="pagination-container" style={{ justifyContent: 'flex-end' }}>
+          <button className="pag-arrow" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>&lt;</button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button key={i+1} className={`pag-number ${currentPage === i+1 ? 'active' : ''}`} onClick={() => setCurrentPage(i+1)}>{i+1}</button>
+          ))}
+          <button className="pag-arrow" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>&gt;</button>
         </div>
       </main>
 
       {isAddModalOpen && (
-      <AddFirm 
-        onAddFirm={onAddFirm} 
-        onClose={() => setIsAddModalOpen(false)} 
-      />
-    )}
-  </div>
-);
+        <AddFirm 
+          onAddFirm={(newFirm) => {
+            handleAddFirm(newFirm);
+            setIsAddModalOpen(false);
+          }} 
+          onClose={() => setIsAddModalOpen(false)} 
+        />
+      )}
+    </div>
+  );
 }
 
 export default Dashboard;

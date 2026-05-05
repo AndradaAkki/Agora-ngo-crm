@@ -1,30 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Search, Edit2, LogOut } from 'lucide-react';
+import { useUserProfileLogic } from './useUserProfileLogic';
 import './App.css';
 
 function UserProfile() {
-  const navigate = useNavigate();
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-
-  // Simulated Logged-In User Data
-  const currentUser = {
-    firstName: 'Alex',
-    lastName: 'Thompson',
-    email: 'alex.t@agora-crm.com',
-    phone: '+1 (555) 123-9999',
-    roles: [
-      { name: 'Full Access: Externe CD', color: '#514EF3', bg: '#F0F0FE' },
-      { name: 'Administrator', color: '#FE8084', bg: '#FBEAEA' }
-    ],
-    avatar: 'https://i.pravatar.cc/150?u=andra'
-  };
-
-  const handleLogout = () => {
-    setIsLogoutModalOpen(false);
-    // In a real app, you would clear auth tokens/cookies here
-    navigate('/'); // Redirect to the Presentation/Login page
-  };
+  const {
+    navigate,
+    isLogoutModalOpen,
+    setIsLogoutModalOpen,
+    currentUser,
+    handleLogout
+  } = useUserProfileLogic();
 
   return (
     <div className="dashboard-container">
@@ -41,7 +27,6 @@ function UserProfile() {
           <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
           <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
           <Bell className="menu-icon" />
-          {/* Highlight the settings icon for the profile page */}
           <Settings className="menu-icon active" title="Profile Settings" />
         </nav>
       </aside>
@@ -68,9 +53,7 @@ function UserProfile() {
             
             {/* Banner Area */}
             <div style={{ height: '200px', background: 'linear-gradient(135deg, #E2E8F0 0%, #F8FAFC 100%)', position: 'relative' }}>
-              {/* Abstract decoration to mimic Figma banner */}
               <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, opacity: 0.5, backgroundImage: 'radial-gradient(circle at 70% 30%, white 0%, transparent 50%)' }}></div>
-              
               <button className="icon-btn-round" style={{ position: 'absolute', bottom: '20px', right: '30px', background: 'white', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                 <Edit2 size={16} color="#7E92A2" />
               </button>

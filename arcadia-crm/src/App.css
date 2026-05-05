@@ -498,3 +498,5 @@ body {
   cursor: pointer;
   padding: 10px 24px;
 }
+.status-active { background: var(--status-accepted-bg); color: var(--status-accepted-text); }
+.status-lead { background: #F0F0FE; color: #514EF3; } /* Culoarea mov pentru lead-uri */

@@ -1,50 +1,29 @@
-import { useState } from 'react';
+import React from 'react';
+import { useAddFirmLogic } from './useAddFirmLogic';
 
-function AddFirm({ onAddFirm, onClose }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    status: 'In Progress',
-    contactName: '',
-    position: '',
-    email: '',
-    phone: ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.name && formData.email) {
-      const newFirm = {
-        name: formData.name,
-        contactName: formData.contactName,
-        email: formData.email,
-        phone: formData.phone,
-        status: formData.status,
-        lastContact: new Date().toISOString().split('T')[0],
-        details: 'Newly added from dashboard.'
-      };
-      
-      onAddFirm(newFirm);
-      onClose(); 
-    }
-  };
+function AddFirm({ onClose }) {
+  // Bind the ViewModel hook to the UI
+  const { formData, handleChange, handleSubmit, isLoading, error } = useAddFirmLogic({ onClose });
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>✖</button>
+        <button className="modal-close" onClick={onClose} disabled={isLoading}>✖</button>
         <h3 style={{ margin: '0 0 20px 0', color: '#092C4C' }}>Add New Company</h3>
         
+        {error && <p style={{ color: 'red', fontSize: '13px' }}>Error saving: {error.message}</p>}
+
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <div>
               <label htmlFor="company-name" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Name</label>
               <input id="company-name" type="text" className="form-input" required
-                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                value={formData.name} onChange={(e) => handleChange('name', e.target.value)} />
             </div>
             <div>
               <label htmlFor="company-status" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Status</label>
               <select id="company-status" className="form-input" 
-                value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})}>
+                value={formData.status} onChange={(e) => handleChange('status', e.target.value)}>
                 <option value="In Progress">In Progress</option>
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
@@ -57,31 +36,31 @@ function AddFirm({ onAddFirm, onClose }) {
             <div>
               <label htmlFor="contact-name" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Name</label>
               <input id="contact-name" type="text" className="form-input" 
-                value={formData.contactName} onChange={(e) => setFormData({...formData, contactName: e.target.value})} />
+                value={formData.contactName} onChange={(e) => handleChange('contactName', e.target.value)} />
             </div>
             <div>
               <label htmlFor="contact-position" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Position</label>
               <input id="contact-position" type="text" className="form-input" 
-                value={formData.position} onChange={(e) => setFormData({...formData, position: e.target.value})} />
+                value={formData.position} onChange={(e) => handleChange('position', e.target.value)} />
             </div>
             <div>
               <label htmlFor="contact-email" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Email</label>
               <input id="contact-email" type="email" className="form-input" required
-                value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                value={formData.email} onChange={(e) => handleChange('email', e.target.value)} />
             </div>
             <div>
               <label htmlFor="contact-phone" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Phone</label>
               <input id="contact-phone" type="text" className="form-input" 
-                value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                value={formData.phone} onChange={(e) => handleChange('phone', e.target.value)} />
             </div>
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#526477', cursor: 'pointer', fontWeight: 'bold' }}>
+          <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
+            <button type="button" onClick={onClose} disabled={isLoading} style={{ background: 'none', border: 'none', color: '#526477', cursor: 'pointer', fontWeight: 'bold' }}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              Save Company
+            <button type="submit" className="btn-primary" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Company'}
             </button>
           </div>
         </form>

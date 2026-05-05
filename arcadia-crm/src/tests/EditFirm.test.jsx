@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { test, expect, vi } from 'vitest';
-import EditFirm from './EditFirm';
+import EditFirm from '../EditFirm';
 
 test('interacts with all fields, CD member dropdown, and alert', () => {
   const mockOnSave = vi.fn();
