@@ -8,12 +8,11 @@ function Dashboard({ firms, onAddFirm, loadMoreFirms, hasMore }) {
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // -----------------------------------------------------
-  // INFINITE SCROLL LISTENER
-  // -----------------------------------------------------
+
+  // INFINITE SCROLL
   const handleScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.target;
-    // Trigger loadMoreFirms if the user is within 50px of the bottom
+   
     if (scrollHeight - scrollTop <= clientHeight + 50) {
       if (hasMore) {
         loadMoreFirms();

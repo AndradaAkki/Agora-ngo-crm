@@ -1,21 +1,48 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@apollo/client/react';
+import { gql } from '@apollo/client/core';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Plus, Users, Copy, Activity, Table as TableIcon, PieChart as ChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as BarTooltip } from 'recharts';
 import './App.css';
+const GET_ALL_EVENTS_DATA = gql`
+  query GetAllEventsData {
+    getFirms(page: 1, limit: 1000) {
+      data {
+        id
+        name
+        status
+        assignedCD
+        email
+        contracts { name steps }
+        history { type }
+      }
+    }
+  }
+`;
 
-function EventsStats({ firms }) {
+function EventsStats() {
+ 
   const navigate = useNavigate();
-
-  // --- STATE ---
   const [selectedEvent, setSelectedEvent] = useState('All Events');
-  const [viewType, setViewType] = useState('chart'); // 'chart' or 'table'
+  const [viewType, setViewType] = useState('chart');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  
-  // State for the new event form
   const [newEventData, setNewEventData] = useState({ name: '', date: '', description: '' });
-  const [customEvents, setCustomEvents] = useState([]); // Stores manually added events
+  const [customEvents, setCustomEvents] = useState([]);
+
+
+  // Fetch all firms directly from Apollo
+  const { data, loading, error } = useQuery(GET_ALL_EVENTS_DATA, {
+    fetchPolicy: 'network-only' // Ensures fresh data for accurate stats
+  });
+
+  
+  if (error) return <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>Error loading data: {error.message}</div>;
+
+  const firms = data?.getFirms?.data || [];
+  
+ 
 
   // --- DATA PROCESSING ---
   const availableEvents = useMemo(() => {

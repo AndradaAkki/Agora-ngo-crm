@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String  @id @default(uuid())
+  role        String
+  email       String  @unique
+  username    String  @unique
+  password    String
+  displayName String?
+  isAdmin     Boolean @default(false)
+
+  // Relations
+  firms       Firm[]    @relation("UserToFirm")
+  history     History[] // Added: Reverse relation to History
+}
+
+model Firm {
+  id         String  @id @default(uuid())
+  name       String
+  email       String?
+  status     String?
+  details    String?
+
+  // Relation: Assigned to a specific user (Assigned Cd)
+  assignedCd String?
+  assignee   User?   @relation("UserToFirm", fields: [assignedCd], references: [id])
+
+  // Downstream Relations
+  contracts  Contract[]
+  contacts   Contact[]
+  history    History[]
+}
+
+model Event {
+  id       String  @id @default(uuid())
+  name     String
+  year     Int
+  details  String?
+
+  contracts Contract[]
+}
+
+model Contract {
+  id       String  @id @default(uuid())
+  status   String?
+
+  // Foreign Keys
+  firmId   String
+  firm     Firm    @relation(fields: [firmId], references: [id])
+
+  eventId  String
+  event    Event   @relation(fields: [eventId], references: [id])
+}
+
+model Contact {
+  id          String  @id @default(uuid())
+  name        String
+  email       String?
+  phoneNumber String?
+  position    String?
+  isPrimary   Boolean @default(false)
+
+  // Foreign Key
+  firmId      String
+  firm        Firm    @relation(fields: [firmId], references: [id])
+}
+
+model History {
+  id        String   @id @default(uuid())
+  details   String
+  
+  // DateTime handles both exact times and specific selected dates.
+  // It defaults to 'right now', but you can pass any date to override it.
+  timestamp DateTime @default(now()) 
+
+  // New Relation: Properly linked to the User table
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  // Existing Relation
+  firmId    String
+  firm      Firm     @relation(fields: [firmId], references: [id])
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash } from 'lucide-react';
-// Explicit imports to bypass Vite caching
+
 import { useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client/core';
 import './App.css';
@@ -28,7 +28,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
   const profileContacts = firm.contacts || [];
   const [editableContacts, setEditableContacts] = useState([...profileContacts]);
 
-  // GraphQL Mutations
+  
   const [addContact] = useMutation(ADD_CONTACT);
   const [updateContact] = useMutation(UPDATE_CONTACT);
   const [deleteContact] = useMutation(DELETE_CONTACT);
@@ -41,7 +41,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
 
   const handleAddContact = () => {
     const newContact = { 
-      id: Date.now(), // Temporary ID for the UI
+      id: Date.now(), 
       name: '', 
       position: '', 
       email: '', 
@@ -56,29 +56,29 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
   };
 
   const handleSaveContacts = async () => {
-    // 1. Instantly update the React UI (optimistic update)
+    
     if (onUpdateFirm) {
         onUpdateFirm({ ...firm, contacts: editableContacts });
     }
 
-    // 2. Sort out what needs to go to the Database
+    ase
     const currentIds = editableContacts.map(c => c.id);
     const deletedContacts = profileContacts.filter(c => !currentIds.includes(c.id));
     const addedContacts = editableContacts.filter(c => typeof c.id === 'number'); // New ones have timestamp numbers
     const updatedContacts = editableContacts.filter(c => typeof c.id === 'string'); // Old ones have string IDs from GraphQL
 
     try {
-      // Execute deletions
+      // deletions
       for (const c of deletedContacts) {
         await deleteContact({ variables: { firmId: firm.id, contactId: String(c.id) }});
       }
-      // Execute additions
+      //  additions
       for (const c of addedContacts) {
         if (c.name) { 
           await addContact({ variables: { firmId: firm.id, name: c.name, email: c.email || "no-email@test.com", position: c.position, phone: c.phone }});
         }
       }
-      // Execute updates
+      // updates
       for (const c of updatedContacts) {
         await updateContact({ variables: { firmId: firm.id, contactId: String(c.id), name: c.name, email: c.email, position: c.position, phone: c.phone }});
       }
