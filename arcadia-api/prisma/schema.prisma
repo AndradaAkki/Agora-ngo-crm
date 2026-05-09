@@ -36,6 +36,7 @@ model Firm {
   contracts  Contract[]
   contacts   Contact[]
   history    History[]
+  tasks Task[]
 }
 
 model Event {
@@ -87,4 +88,11 @@ model History {
   // Existing Relation
   firmId    String
   firm      Firm     @relation(fields: [firmId], references: [id])
+}
+model Task {
+  id       String  @id @default(uuid())
+  desc     String
+  isDone   Boolean @default(false)
+  firmId   String
+  firm     Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
 }

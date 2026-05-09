@@ -13,6 +13,7 @@ const typeDefs = `#graphql
     pausedUntil: String
     contracts: [Contract]
     history: [History]
+    tasks: [Task]
   }
 
   type Contract {
@@ -42,7 +43,12 @@ const typeDefs = `#graphql
 
   type Mutation {
     addFirm(name: String!, email: String, status: String): Firm!
-updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String): Firm!    deleteFirm(id: ID!): Firm!
+    updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String): Firm!    deleteFirm(id: ID!): Firm!
+    addTask(firmId: ID!, desc: String!): Task!
+    toggleTask(taskId: ID!): Task!
+    deleteTask(taskId: ID!): Task!
+    addHistory(firmId: ID!, type: String!, desc: String!, author: String!, date: String!): History!
+    deleteHistory(historyId: ID!): History!
   }
 
   type Subscription {
@@ -57,6 +63,11 @@ updateFirm(id: ID!, name: String, mail: String, status: String, details: String,
     role: String
     isAdmin: Boolean!
   }
+    type Task {
+  id: ID!
+  desc: String!
+  isDone: Boolean!
+}
 `;
 
 // 2. The Resolvers (Where Prisma talks to PostgreSQL)
@@ -76,7 +87,8 @@ const resolvers = {
               include: {
                 event: true 
               }
-            }
+            },
+            tasks: true
           }
         }),
         prisma.firm.count()
@@ -135,6 +147,29 @@ const resolvers = {
         where: { id: id } // ID is already a UUID string
       });
       return deletedFirm;
+    },
+    addTask: async (_, { firmId, desc }, { prisma }) => {
+      return await prisma.task.create({
+        data: { desc, firmId, isDone: false }
+      });
+    },
+    toggleTask: async (_, { taskId }, { prisma }) => {
+      const task = await prisma.task.findUnique({ where: { id: taskId } });
+      return await prisma.task.update({
+        where: { id: taskId },
+        data: { isDone: !task.isDone }
+      });
+    },
+    deleteTask: async (_, { taskId }, { prisma }) => {
+      return await prisma.task.delete({ where: { id: taskId } });
+    },
+    addHistory: async (_, { firmId, type, desc, author, date }, { prisma }) => {
+      return await prisma.history.create({
+        data: { type: type, details: desc, timestamp: new Date(date), firmId: firmId }
+      });
+    },
+    deleteHistory: async (_, { historyId }, { prisma }) => {
+      return await prisma.history.delete({ where: { id: historyId } });
     }
   },
 

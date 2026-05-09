@@ -14,15 +14,18 @@ function FirmProfile({ firms, setFirms }) {
     isContactManagerOpen, setIsContactManagerOpen,
     isAddActivityOpen, setIsAddActivityOpen,
     isPauseModalOpen, setIsPauseModalOpen,
-    isDeleteHistoryModalOpen,
+    isDeleteHistoryModalOpen, setIsDeleteHistoryModalOpen,
+    
+    localDetails, setLocalDetails, // <-- Aici sunt variabilele lipsa pentru Notes
     newTaskDesc, setNewTaskDesc,
     pauseDate, setPauseDate,
     activityData, setActivityData,
-    handleConfirmDelete, handleSaveEdit, handleDetailsChange, openContactManager,
+    
+    handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
     handleAddTask, toggleTask, deleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
     isPaused, handleTogglePause, handleSavePause, handleSaveActivity
-  } = useFirmProfileLogic({ firms, setFirms });
+  } = useFirmProfileLogic({ firms });
 
   if (!firm) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Company not found. <button onClick={() => navigate('/dashboard')}>Back</button></div>;
@@ -177,10 +180,11 @@ function FirmProfile({ firms, setFirms }) {
               {/* Top Half: Scratchpad */}
               <div style={{ flex: '1', borderBottom: '1px solid #EAEEF4', background: '#F8F9FA' }}>
                 <textarea 
-                  value={firm.details || ''}
-                  onChange={handleDetailsChange}
+                  value={localDetails}
+                  onChange={(e) => setLocalDetails(e.target.value)}
+                  onBlur={handleDetailsBlur}
                   placeholder="Type quick notes, quirks, or random details here... (Auto-saves)"
-                  style={{ width: '100%', height: '100%', minHeight: '120px', border: 'none', background: 'transparent', padding: '20px', resize: 'none', fontFamily: 'inherit', color: '#092C4C', outline: 'none' }}
+                  style={{ width: '100%' , height: '100%', minHeight: '120px', border: 'none', background: 'transparent', boxSizing: 'border-box' , padding: '20px', resize: 'none', fontFamily: 'inherit', color: '#092C4C', outline: 'none' }}
                 />
               </div>
 

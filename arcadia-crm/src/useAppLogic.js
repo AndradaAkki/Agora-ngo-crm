@@ -15,6 +15,20 @@ export const GET_FIRMS = gql`
         name
         email
         status
+        details
+        pausedUntil
+        assignedCD
+        tasks {
+          id
+          desc
+          isDone
+        }
+        history {
+          id
+          type
+          details
+          timestamp
+        }
       }
     }
   }
