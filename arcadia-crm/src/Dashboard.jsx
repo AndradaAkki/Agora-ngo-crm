@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter, Plus } from 'lucide-react';
+import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, Filter, Plus } from 'lucide-react';
 import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
 import './App.css';
+
+const STATUS_OPTION_STYLES = {
+  'Not Started': { background: '#F0F4F8', color: '#7E92A2' },
+  'Contacted':   { background: '#ECEFFE', color: '#514EF3' },
+  'Waiting':     { background: '#FFF4E5', color: '#FFC357' },
+  'Interested':  { background: '#E0F7F4', color: '#2DC8A8' },
+  'Rejected':    { background: '#FBEAEA', color: '#FE8084' },
+  'Accepted':    { background: '#d2f7ef', color: '#2DC8A8' },
+};
 
 function Dashboard({ firms, onAddFirm }) {
   const {
@@ -74,16 +83,16 @@ function Dashboard({ firms, onAddFirm }) {
              <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                <Mail size={16} /> Mass Mail
              </button>
-             <select
-               className="btn-outline"
-               style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-               value={selectedEvent}
-               onChange={(e) => { setSelectedEvent(e.target.value); setCurrentPage(1); }}
-             >
-               {availableEvents.map(ev => (
-                 <option key={ev} value={ev}>{ev === 'All Events' ? 'All Events' : `Event: ${ev}`}</option>
-               ))}
-             </select>
+             <div className="select-wrap select-wrap-pill">
+               <select
+                 value={selectedEvent}
+                 onChange={(e) => { setSelectedEvent(e.target.value); setCurrentPage(1); }}
+               >
+                 {availableEvents.map(ev => (
+                   <option key={ev} value={ev}>{ev === 'All Events' ? 'All Events' : `Event: ${ev}`}</option>
+                 ))}
+               </select>
+             </div>
              <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                Filter <Filter size={16} color="#7E92A2" />
              </button>
@@ -113,20 +122,23 @@ function Dashboard({ firms, onAddFirm }) {
                     <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
                     <td>
                       {selectedEvent === 'All Events' ? (
-                        <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                          {firm.status ? firm.status.toUpperCase() : 'UNKNOWN'}
+                        <span className={`status-badge status-${getEventStatus(firm).toLowerCase().replace(/\s+/g, '-')}`}>
+                          {getEventStatus(firm)}
                         </span>
                       ) : (
-                        <select
-                          className="form-input"
-                          style={{ margin: 0, padding: '4px 8px', fontSize: '13px' }}
-                          value={getEventStatus(firm)}
-                          onChange={(e) => handleSetFirmStatus(firm.id, e.target.value)}
+                        <div
+                          className="select-wrap select-wrap-badge"
+                          style={STATUS_OPTION_STYLES[getEventStatus(firm)]}
                         >
-                          {EVENT_STATUSES.map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
+                          <select
+                            value={getEventStatus(firm)}
+                            onChange={(e) => handleSetFirmStatus(firm.id, e.target.value)}
+                          >
+                            {EVENT_STATUSES.map(s => (
+                              <option key={s} value={s} style={STATUS_OPTION_STYLES[s]}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
                       )}
                     </td>
                     <td>

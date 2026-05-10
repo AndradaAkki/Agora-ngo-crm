@@ -160,7 +160,79 @@ body {
 
 .status-accepted { background: var(--status-accepted-bg); color: var(--status-accepted-text); }
 .status-rejected { background: var(--status-rejected-bg); color: var(--status-rejected-text); }
-.status-in-progress { background: var(--status-pending-bg); color: var(--status-pending-text); }
+
+.status-not-started { background: #F0F4F8; color: #7E92A2; }
+.status-contacted { background: #ECEFFE; color: #514EF3; }
+.status-waiting { background: var(--status-pending-bg); color: var(--status-pending-text); }
+.status-interested { background: #E0F7F4; color: #2DC8A8; }
+
+/* Shared wrapper — the div carries border-radius/border; the select inside is transparent */
+.select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-75%) rotate(45deg);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.select-wrap select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: var(--font-main);
+  width: 100%;
+}
+
+/* Pill wrapper — event filter */
+.select-wrap-pill {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 70px;
+  color: var(--text-main);
+  padding: 8px 30px 8px 16px;
+  font-size: 13px;
+}
+.select-wrap-pill:hover {
+  border-color: var(--text-light);
+}
+.select-wrap-pill select {
+  font-size: 13px;
+}
+
+/* Badge wrapper — status dropdown */
+.select-wrap-badge {
+  border-radius: 8px;
+  padding: 5px 22px 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.select-wrap-badge::after {
+  right: 8px;
+  width: 4px;
+  height: 4px;
+}
+.select-wrap-badge select {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
 
 /* --- Animations --- */
 
@@ -498,5 +570,3 @@ body {
   cursor: pointer;
   padding: 10px 24px;
 }
-.status-active { background: var(--status-accepted-bg); color: var(--status-accepted-text); }
-.status-lead { background: #F0F0FE; color: #514EF3; } /* Culoarea mov pentru lead-uri */

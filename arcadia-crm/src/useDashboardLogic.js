@@ -19,6 +19,7 @@ const SET_FIRM_EVENT_STATUS = gql`
 `;
 
 const EVENT_STATUSES = ['Not Started', 'Contacted', 'Waiting', 'Interested', 'Rejected', 'Accepted'];
+const STATUS_PRIORITY = ['Accepted', 'Interested', 'Waiting', 'Contacted', 'Not Started', 'Rejected'];
 
 export function useDashboardLogic({ firms, onAddFirm }) {
   const navigate = useNavigate();
@@ -45,9 +46,17 @@ export function useDashboardLogic({ firms, onAddFirm }) {
   }, [eventsData]);
 
   const getEventStatus = (firm) => {
-    if (selectedEvent === 'All Events') return firm.status || 'Unknown';
-    const fes = firm.firmEventStatuses?.find(s => s.eventName === selectedEvent);
-    return fes?.status || 'Not Started';
+    if (selectedEvent !== 'All Events') {
+      const fes = firm.firmEventStatuses?.find(s => s.eventName === selectedEvent);
+      return fes?.status || 'Not Started';
+    }
+    const statuses = firm.firmEventStatuses?.map(s => s.status) || [];
+    if (statuses.length === 0) return 'Not Started';
+    return statuses.reduce((best, current) => {
+      const bi = STATUS_PRIORITY.indexOf(best);
+      const ci = STATUS_PRIORITY.indexOf(current);
+      return ci < bi ? current : best;
+    });
   };
 
   const handleSetFirmStatus = (firmId, status) => {
