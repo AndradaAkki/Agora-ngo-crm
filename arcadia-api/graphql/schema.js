@@ -95,6 +95,9 @@ const typeDefs = `#graphql
     addContact(firmId: ID!, name: String!, email: String, position: String, phone: String, isPrimary: Boolean): Contact!
     updateContact(firmId: ID!, contactId: ID!, name: String, email: String, position: String, phone: String, isPrimary: Boolean): Contact!
     deleteContact(firmId: ID!, contactId: ID!): Contact!
+    addContract(firmId: ID!, eventId: ID!): Contract!
+    deleteContract(contractId: ID!): Contract!
+    updateContractSteps(contractId: ID!, steps: [String!]!): Contract!
   }
 
   type Subscription {
@@ -129,7 +132,7 @@ const resolvers = {
           id: c.id,
           status: c.status,
           name: c.event?.name || "Unknown Event",
-          steps: []
+          steps: c.completedSteps || []
         })),
         history: firm.history.map(h => ({
           id: h.id,
@@ -224,6 +227,28 @@ const resolvers = {
     },
     deleteHistory: async (_, { historyId }, { prisma }) => {
       return await prisma.history.delete({ where: { id: historyId } });
+    },
+    addContract: async (_, { firmId, eventId }, { prisma }) => {
+      const contract = await prisma.contract.create({
+        data: { firmId, eventId },
+        include: { event: true }
+      });
+      return { id: contract.id, status: contract.status, name: contract.event?.name || 'Unknown Event', steps: [] };
+    },
+    deleteContract: async (_, { contractId }, { prisma }) => {
+      const contract = await prisma.contract.delete({
+        where: { id: contractId },
+        include: { event: true }
+      });
+      return { id: contract.id, status: contract.status, name: contract.event?.name || 'Unknown Event', steps: [] };
+    },
+    updateContractSteps: async (_, { contractId, steps }, { prisma }) => {
+      const contract = await prisma.contract.update({
+        where: { id: contractId },
+        data: { completedSteps: steps },
+        include: { event: true }
+      });
+      return { id: contract.id, status: contract.status, name: contract.event?.name || 'Unknown Event', steps: contract.completedSteps || [] };
     },
     addContact: async (_, { firmId, name, email, position, phone, isPrimary }, { prisma }) => {
       if (isPrimary) {

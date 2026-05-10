@@ -24,7 +24,11 @@ function FirmProfile({ firms, setFirms }) {
     handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
     handleAddTask, toggleTask, deleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
-    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity
+    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity,
+    isAddContractOpen, setIsAddContractOpen, pendingDeleteContractId,
+    events, selectedNewEventId, setSelectedNewEventId,
+    handleAddContract, promptDeleteContract, cancelDeleteContract, confirmDeleteContract,
+    handleStepToggle
   } = useFirmProfileLogic({ firms });
 
   if (!firm) {
@@ -227,15 +231,33 @@ function FirmProfile({ firms, setFirms }) {
 
           {/* Contracts */}
           <div className="profile-card">
-            <div className="profile-card-header">Contracts</div>
+            <div className="profile-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Contracts
+              <button
+                onClick={() => setIsAddContractOpen(true)}
+                style={{ background: '#F0F0FE', border: 'none', color: '#514EF3', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontWeight: 'bold', padding: '6px 12px', borderRadius: '6px' }}
+              >
+                <Plus size={14} /> Add Contract
+              </button>
+            </div>
             <div className="profile-card-body">
-              {profileContracts.map((contract, i) => (
-                <div key={i} style={{ marginBottom: '20px' }}>
-                  <p style={{ fontWeight: '600', margin: '0 0 10px 0', color: '#092C4C' }}>{contract.name}</p>
+              {profileContracts.map((contract) => (
+                <div key={contract.id} style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <p style={{ fontWeight: '600', margin: 0, color: '#092C4C' }}>{contract.name}</p>
+                    <button onClick={() => promptDeleteContract(contract.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084', opacity: 0.6 }}>
+                      <Trash size={14} />
+                    </button>
+                  </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                    {['Accepted', 'Legal info', 'Contract sent', 'Signed by them', 'Signed by us', 'Promo delivered', 'Got Paid'].map((step, j) => (
-                      <label key={j} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#526477', cursor: 'pointer' }}>
-                        <input type="checkbox" defaultChecked={contract.steps?.includes(step)} style={{ cursor: 'pointer' }} />
+                    {['Accepted', 'Legal info', 'Contract sent', 'Signed by them', 'Signed by us', 'Promo delivered', 'Got Paid'].map((step) => (
+                      <label key={step} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#526477', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={contract.steps?.includes(step) || false}
+                          onChange={(e) => handleStepToggle(contract.id, step, e.target.checked)}
+                          style={{ cursor: 'pointer' }}
+                        />
                         {step}
                       </label>
                     ))}
@@ -413,6 +435,50 @@ function FirmProfile({ firms, setFirms }) {
               <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                 <button className="btn-cancel" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
                 <button className="btn-danger" onClick={handleConfirmDelete}>Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Contract Modal */}
+        {isAddContractOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ width: '380px' }}>
+              <button className="modal-close" onClick={() => setIsAddContractOpen(false)}>✖</button>
+              <h3 style={{ margin: '0 0 20px 0', color: '#092C4C' }}>Add Contract</h3>
+              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Select Event</label>
+              <select
+                className="form-input"
+                value={selectedNewEventId}
+                onChange={(e) => setSelectedNewEventId(e.target.value)}
+              >
+                <option value="">— choose event —</option>
+                {events.map(ev => (
+                  <option key={ev.id} value={ev.id}>{ev.name}</option>
+                ))}
+              </select>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px' }}>
+                <button className="btn-cancel" onClick={() => setIsAddContractOpen(false)}>Cancel</button>
+                <button className="btn-primary" onClick={handleAddContract} disabled={!selectedNewEventId}>Add</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Contract Confirmation Modal */}
+        {pendingDeleteContractId && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ width: '420px', textAlign: 'center', padding: '40px 30px' }}>
+              <button className="modal-close" onClick={cancelDeleteContract}>✖</button>
+              <h3 style={{ color: '#092C4C', marginTop: '10px', fontSize: '20px', lineHeight: '1.4' }}>
+                Are you sure you want to delete<br/>this contract?
+              </h3>
+              <p style={{ color: '#7E92A2', fontSize: '14px', lineHeight: '1.6', margin: '20px 0 30px 0', padding: '0 10px' }}>
+                This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <button className="btn-cancel" onClick={cancelDeleteContract}>Cancel</button>
+                <button className="btn-danger" onClick={confirmDeleteContract}>Delete</button>
               </div>
             </div>
           </div>

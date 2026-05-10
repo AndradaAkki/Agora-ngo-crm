@@ -65,12 +65,12 @@ model FirmEventStatus {
 }
 
 model Contract {
-  id       String  @id @default(uuid())
-  status   String?
+  id             String   @id @default(uuid())
+  status         String?
+  completedSteps String[]
 
-  // Foreign Keys
   firmId   String
-  firm     Firm    @relation(fields: [firmId], references: [id])
+  firm     Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
 
   eventId  String
   event    Event   @relation(fields: [eventId], references: [id])

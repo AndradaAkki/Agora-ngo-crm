@@ -38,6 +38,12 @@ export const GET_FIRMS = gql`
           author
           timestamp
         }
+        contracts {
+          id
+          name
+          status
+          steps
+        }
         firmEventStatuses {
           id
           status

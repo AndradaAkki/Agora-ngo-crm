@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import {  gql } from '@apollo/client';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 
 // 1. Definim mutatiile GraphQL
 const UPDATE_FIRM_DETAILS = gql`
@@ -37,6 +37,28 @@ const DELETE_HISTORY = gql`
   mutation DeleteHistory($historyId: ID!) { deleteHistory(historyId: $historyId) { id } }
 `;
 
+const GET_EVENTS = gql`
+  query GetEvents { getEvents { id name } }
+`;
+
+const ADD_CONTRACT = gql`
+  mutation AddContract($firmId: ID!, $eventId: ID!) {
+    addContract(firmId: $firmId, eventId: $eventId) { id name status steps }
+  }
+`;
+
+const DELETE_CONTRACT = gql`
+  mutation DeleteContract($contractId: ID!) {
+    deleteContract(contractId: $contractId) { id }
+  }
+`;
+
+const UPDATE_CONTRACT_STEPS = gql`
+  mutation UpdateContractSteps($contractId: ID!, $steps: [String!]!) {
+    updateContractSteps(contractId: $contractId, steps: $steps) { id steps }
+  }
+`;
+
 // Atentie: am scos setFirms din props, nu mai avem nevoie de el!
 export function useFirmProfileLogic({ firms }) {
   const { id } = useParams();
@@ -55,12 +77,18 @@ export function useFirmProfileLogic({ firms }) {
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [pauseDate, setPauseDate] = useState('');
   const [activityData, setActivityData] = useState({ type: 'Call', desc: '', date: new Date().toISOString().split('T')[0] });
+  const [isAddContractOpen, setIsAddContractOpen] = useState(false);
+  const [pendingDeleteContractId, setPendingDeleteContractId] = useState(null);
+  const [selectedNewEventId, setSelectedNewEventId] = useState('');
 
   useEffect(() => {
     if (firm) setLocalDetails(firm.details || '');
   }, [firm?.details]);
 
   // 2. Initializam mutatiile
+  const { data: eventsData } = useQuery(GET_EVENTS);
+  const events = eventsData?.getEvents || [];
+
   const [updateFirm] = useMutation(UPDATE_FIRM_DETAILS, { refetchQueries: ['GetFirms'] });
   const [deleteFirm] = useMutation(DELETE_FIRM, { onCompleted: () => navigate('/dashboard'), refetchQueries: ['GetFirms'] });
   const [addTask] = useMutation(ADD_TASK, { refetchQueries: ['GetFirms'] });
@@ -68,6 +96,9 @@ export function useFirmProfileLogic({ firms }) {
   const [deleteTask] = useMutation(DELETE_TASK, { refetchQueries: ['GetFirms'] });
   const [addHistory] = useMutation(ADD_HISTORY, { refetchQueries: ['GetFirms'] });
   const [deleteHistory] = useMutation(DELETE_HISTORY, { refetchQueries: ['GetFirms'] });
+  const [addContract] = useMutation(ADD_CONTRACT, { refetchQueries: ['GetFirms'] });
+  const [deleteContractMutation] = useMutation(DELETE_CONTRACT, { refetchQueries: ['GetFirms'] });
+  const [updateContractSteps] = useMutation(UPDATE_CONTRACT_STEPS);
 
   // 3. Handlere conectate la baza de date
   const handleConfirmDelete = () => deleteFirm({ variables: { id: firm.id } });
@@ -101,6 +132,31 @@ export function useFirmProfileLogic({ firms }) {
   };
   
   const cancelDeleteHistory = () => { setIsDeleteHistoryModalOpen(false); setHistoryToDelete(null); };
+
+  const handleAddContract = async () => {
+    if (!selectedNewEventId) return;
+    await addContract({ variables: { firmId: firm.id, eventId: selectedNewEventId } });
+    setIsAddContractOpen(false);
+    setSelectedNewEventId('');
+  };
+
+  const promptDeleteContract = (contractId) => setPendingDeleteContractId(contractId);
+  const cancelDeleteContract = () => setPendingDeleteContractId(null);
+  const confirmDeleteContract = () => {
+    if (pendingDeleteContractId) {
+      deleteContractMutation({ variables: { contractId: pendingDeleteContractId } });
+      setPendingDeleteContractId(null);
+    }
+  };
+
+  const handleStepToggle = (contractId, step, checked) => {
+    const contract = firm.contracts?.find(c => c.id === contractId);
+    if (!contract) return;
+    const newSteps = checked
+      ? [...(contract.steps || []), step]
+      : (contract.steps || []).filter(s => s !== step);
+    updateContractSteps({ variables: { contractId, steps: newSteps } });
+  };
 
   const handleSaveActivity = () => {
     if (activityData.desc.trim() !== '') {
@@ -155,6 +211,10 @@ export function useFirmProfileLogic({ firms }) {
     handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
     handleAddTask, toggleTask: handleToggleTask, deleteTask: handleDeleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
-    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity
+    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity,
+    isAddContractOpen, setIsAddContractOpen, pendingDeleteContractId,
+    events, selectedNewEventId, setSelectedNewEventId,
+    handleAddContract, promptDeleteContract, cancelDeleteContract, confirmDeleteContract,
+    handleStepToggle
   };
 }
