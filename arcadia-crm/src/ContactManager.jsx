@@ -9,7 +9,10 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
     handleCellChange,
     handleSetPrimary,
     handleAddContact,
-    handleDeleteContact,
+    promptDeleteContact,
+    cancelDeleteContact,
+    confirmDeleteContact,
+    pendingDeleteId,
     handleSaveContacts
   } = useContactManagerLogic({ firm, onUpdateFirm, onClose });
 
@@ -60,7 +63,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
                     <input type="text" className="form-input" style={{ margin: 0 }} value={contact.phoneNumber || ''} onChange={(e) => handleCellChange(contact.id, 'phoneNumber', e.target.value)} />
                   </td>
                   <td style={{ padding: '5px', textAlign: 'center' }}>
-                    <button onClick={() => handleDeleteContact(contact.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084' }}>
+                    <button onClick={() => promptDeleteContact(contact.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084' }}>
                       <Trash size={16} />
                     </button>
                   </td>
@@ -80,6 +83,21 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
           </div>
         </div>
       </div>
+
+      {pendingDeleteId && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ width: '420px', textAlign: 'center', padding: '40px 30px' }}>
+            <button className="modal-close" onClick={cancelDeleteContact}>✖</button>
+            <p style={{ fontSize: '18px', fontWeight: '600', color: '#092C4C', marginBottom: '10px' }}>
+              Are you sure you want to<br />permanently remove this contact?
+            </p>
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn-cancel" onClick={cancelDeleteContact}>Cancel</button>
+              <button className="btn-danger" onClick={confirmDeleteContact}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

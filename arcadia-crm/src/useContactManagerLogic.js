@@ -23,6 +23,7 @@ export const DELETE_CONTACT = gql`
 export function useContactManagerLogic({ firm, onUpdateFirm, onClose }) {
   const profileContacts = firm.contacts || [];
   const [editableContacts, setEditableContacts] = useState([...profileContacts]);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   const [addContact] = useMutation(ADD_CONTACT, { refetchQueries: ['GetFirms'] });
   const [updateContact] = useMutation(UPDATE_CONTACT, { refetchQueries: ['GetFirms'] });
@@ -53,8 +54,11 @@ export function useContactManagerLogic({ firm, onUpdateFirm, onClose }) {
     setEditableContacts([...editableContacts, newContact]);
   };
 
-  const handleDeleteContact = (id) => {
-    setEditableContacts(editableContacts.filter(c => c.id !== id));
+  const promptDeleteContact = (id) => setPendingDeleteId(id);
+  const cancelDeleteContact = () => setPendingDeleteId(null);
+  const confirmDeleteContact = () => {
+    setEditableContacts(editableContacts.filter(c => c.id !== pendingDeleteId));
+    setPendingDeleteId(null);
   };
 
   const handleSaveContacts = async () => {
@@ -94,7 +98,10 @@ export function useContactManagerLogic({ firm, onUpdateFirm, onClose }) {
     handleCellChange,
     handleSetPrimary,
     handleAddContact,
-    handleDeleteContact,
+    promptDeleteContact,
+    cancelDeleteContact,
+    confirmDeleteContact,
+    pendingDeleteId,
     handleSaveContacts
   };
 }
