@@ -23,6 +23,14 @@ export const GET_FIRMS = gql`
           desc
           isDone
         }
+        contacts {
+          id
+          name
+          email
+          phoneNumber
+          position
+          isPrimary
+        }
         history {
           id
           type
@@ -90,7 +98,7 @@ export function useAppLogic() {
 
   // 1. APOLLO QUERIES
   const { loading: isInitialLoading, error, data, fetchMore, refetch } = useQuery(GET_FIRMS, {
-    variables: { page: 1, limit: 10 },
+    variables: { page: 1, limit: 100 },
     fetchPolicy: 'cache-first', 
   });
 

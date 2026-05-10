@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Star } from 'lucide-react';
 import { useContactManagerLogic } from './useContactManagerLogic';
 import './App.css';
 
@@ -7,6 +7,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
   const {
     editableContacts,
     handleCellChange,
+    handleSetPrimary,
     handleAddContact,
     handleDeleteContact,
     handleSaveContacts
@@ -22,6 +23,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
           <table className="custom-table" style={{ margin: 0, width: '100%' }}>
             <thead>
               <tr>
+                <th style={{ padding: '10px', width: '40px' }}></th>
                 <th style={{ padding: '10px' }}>Name</th>
                 <th style={{ padding: '10px' }}>Position</th>
                 <th style={{ padding: '10px' }}>Email</th>
@@ -32,6 +34,19 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
             <tbody>
               {editableContacts.map(contact => (
                 <tr key={contact.id} style={{ background: 'white' }}>
+                  <td style={{ padding: '5px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleSetPrimary(contact.id)}
+                      title={contact.isPrimary ? 'Primary contact' : 'Set as primary'}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Star
+                        size={16}
+                        color={contact.isPrimary ? '#514EF3' : '#C8D4DF'}
+                        fill={contact.isPrimary ? '#514EF3' : 'none'}
+                      />
+                    </button>
+                  </td>
                   <td style={{ padding: '5px' }}>
                     <input type="text" className="form-input" style={{ margin: 0 }} value={contact.name} onChange={(e) => handleCellChange(contact.id, 'name', e.target.value)} />
                   </td>
@@ -42,7 +57,7 @@ function ContactManager({ firm, onUpdateFirm, onClose }) {
                     <input type="text" className="form-input" style={{ margin: 0 }} value={contact.email} onChange={(e) => handleCellChange(contact.id, 'email', e.target.value)} />
                   </td>
                   <td style={{ padding: '5px' }}>
-                    <input type="text" className="form-input" style={{ margin: 0 }} value={contact.phone} onChange={(e) => handleCellChange(contact.id, 'phone', e.target.value)} />
+                    <input type="text" className="form-input" style={{ margin: 0 }} value={contact.phoneNumber || ''} onChange={(e) => handleCellChange(contact.id, 'phoneNumber', e.target.value)} />
                   </td>
                   <td style={{ padding: '5px', textAlign: 'center' }}>
                     <button onClick={() => handleDeleteContact(contact.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084' }}>

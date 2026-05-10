@@ -10,6 +10,15 @@ const typeDefs = `#graphql
     eventName: String
   }
 
+  type Contact {
+    id: ID!
+    name: String!
+    email: String
+    phoneNumber: String
+    position: String
+    isPrimary: Boolean
+  }
+
   type Firm {
     id: ID!
     name: String!
@@ -19,6 +28,7 @@ const typeDefs = `#graphql
     assignedCD: String
     pausedUntil: String
     contracts: [Contract]
+    contacts: [Contact]
     history: [History]
     tasks: [Task]
     firmEventStatuses: [FirmEventStatus]
@@ -82,6 +92,9 @@ const typeDefs = `#graphql
     addHistory(firmId: ID!, type: String!, desc: String!, author: String!, date: String!): History!
     deleteHistory(historyId: ID!): History!
     setFirmEventStatus(firmId: ID!, eventId: ID!, status: String!): FirmEventStatus!
+    addContact(firmId: ID!, name: String!, email: String, position: String, phone: String, isPrimary: Boolean): Contact!
+    updateContact(firmId: ID!, contactId: ID!, name: String, email: String, position: String, phone: String, isPrimary: Boolean): Contact!
+    deleteContact(firmId: ID!, contactId: ID!): Contact!
   }
 
   type Subscription {
@@ -102,6 +115,7 @@ const resolvers = {
           include: {
             history: true,
             contracts: { include: { event: true } },
+            contacts: true,
             tasks: true,
             firmEventStatuses: { include: { event: true } }
           }
@@ -123,6 +137,14 @@ const resolvers = {
           details: h.details,
           author: h.author || null,
           timestamp: h.timestamp ? h.timestamp.toISOString() : null
+        })),
+        contacts: firm.contacts.map(c => ({
+          id: c.id,
+          name: c.name,
+          email: c.email || null,
+          phoneNumber: c.phoneNumber || null,
+          position: c.position || null,
+          isPrimary: c.isPrimary
         })),
         firmEventStatuses: firm.firmEventStatuses.map(fes => ({
           id: fes.id,
@@ -159,10 +181,17 @@ const resolvers = {
       return newFirm;
     },
     
-    updateFirm: async (_, { id, ...data }, { prisma }) => {
+    updateFirm: async (_, { id, assignedCD, mail, ...rest }, { prisma }) => {
+      const data = { ...rest };
+      if (assignedCD !== undefined) {
+        data.assignedCd = (assignedCD && assignedCD !== 'nobody') ? assignedCD : null;
+      }
+      if (mail !== undefined) {
+        data.email = mail || null;
+      }
       const updatedFirm = await prisma.firm.update({
-        where: { id: id }, // ID is already a UUID string
-        data: data
+        where: { id },
+        data
       });
       return updatedFirm;
     },
@@ -195,6 +224,27 @@ const resolvers = {
     },
     deleteHistory: async (_, { historyId }, { prisma }) => {
       return await prisma.history.delete({ where: { id: historyId } });
+    },
+    addContact: async (_, { firmId, name, email, position, phone, isPrimary }, { prisma }) => {
+      if (isPrimary) {
+        await prisma.contact.updateMany({ where: { firmId }, data: { isPrimary: false } });
+      }
+      return await prisma.contact.create({
+        data: { firmId, name, email: email || null, position: position || null, phoneNumber: phone || null, isPrimary: isPrimary || false }
+      });
+    },
+    updateContact: async (_, { contactId, name, email, position, phone, isPrimary }, { prisma }) => {
+      if (isPrimary === true) {
+        const contact = await prisma.contact.findUnique({ where: { id: contactId } });
+        await prisma.contact.updateMany({ where: { firmId: contact.firmId }, data: { isPrimary: false } });
+      }
+      return await prisma.contact.update({
+        where: { id: contactId },
+        data: { name, email: email || null, position: position || null, phoneNumber: phone || null, ...(isPrimary !== undefined && { isPrimary }) }
+      });
+    },
+    deleteContact: async (_, { contactId }, { prisma }) => {
+      return await prisma.contact.delete({ where: { id: contactId } });
     },
     setFirmEventStatus: async (_, { firmId, eventId, status }, { prisma }) => {
       const record = await prisma.firmEventStatus.upsert({

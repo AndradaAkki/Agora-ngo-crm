@@ -158,7 +158,7 @@ function FirmProfile({ firms, setFirms }) {
                       <td style={{ padding: '15px 10px', color: '#7E92A2' }}>{c.name}</td>
                       <td style={{ padding: '15px 10px', color: '#7E92A2' }}>{c.position}</td>
                       <td style={{ padding: '15px 10px', color: '#7E92A2' }}>{c.email}</td>
-                      <td style={{ padding: '15px 10px', color: '#7E92A2' }}>{c.phone}</td>
+                      <td style={{ padding: '15px 10px', color: '#7E92A2' }}>{c.phoneNumber}</td>
                       <td style={{ padding: '15px 10px' }}>
                         {c.isPrimary && <span style={{ background: '#E0E7FF', color: '#514EF3', padding: '4px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>PRIMARY</span>}
                       </td>

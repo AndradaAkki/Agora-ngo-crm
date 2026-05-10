@@ -84,6 +84,7 @@ function Dashboard({ firms, onAddFirm }) {
                <Mail size={16} /> Mass Mail
              </button>
              <div className="select-wrap select-wrap-pill">
+               <span>{selectedEvent === 'All Events' ? 'All Events' : `Event: ${selectedEvent}`}</span>
                <select
                  value={selectedEvent}
                  onChange={(e) => { setSelectedEvent(e.target.value); setCurrentPage(1); }}
@@ -114,12 +115,13 @@ function Dashboard({ firms, onAddFirm }) {
             <tbody>
               {currentFirms.map((firm) => {
                 const isPaused = firm.pausedUntil && new Date(firm.pausedUntil) >= new Date();
+                const primary = firm.contacts?.find(c => c.isPrimary) || firm.contacts?.[0];
                 return (
                   <tr key={firm.id} className="table-row" style={{ opacity: isPaused ? 0.4 : 1, transition: 'opacity 0.2s' }}>
                     <td className="firm-name-cell"><strong>{firm.name}</strong></td>
-                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.contactName || 'N/A'}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.name || 'N/A'}</td>
                     <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
-                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.phoneNumber || 'N/A'}</td>
                     <td>
                       {selectedEvent === 'All Events' ? (
                         <span className={`status-badge status-${getEventStatus(firm).toLowerCase().replace(/\s+/g, '-')}`}>
@@ -130,6 +132,7 @@ function Dashboard({ firms, onAddFirm }) {
                           className="select-wrap select-wrap-badge"
                           style={STATUS_OPTION_STYLES[getEventStatus(firm)]}
                         >
+                          <span>{getEventStatus(firm)}</span>
                           <select
                             value={getEventStatus(firm)}
                             onChange={(e) => handleSetFirmStatus(firm.id, e.target.value)}
