@@ -44,7 +44,7 @@ const typeDefs = `#graphql
 
   type Mutation {
     addFirm(name: String!, email: String, status: String): Firm!
-    updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String): Firm!    deleteFirm(id: ID!): Firm!
+    updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String, pausedUntil: String): Firm!    deleteFirm(id: ID!): Firm!
     addTask(firmId: ID!, desc: String!): Task!
     toggleTask(taskId: ID!): Task!
     deleteTask(taskId: ID!): Task!

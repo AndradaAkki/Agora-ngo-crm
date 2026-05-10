@@ -8,15 +8,24 @@ export function useMyFirmsLogic({ firms }) {
   const currentUser = "Alex Thompson";
 
   // 2. Filtram lista pentru a arata doar companiile asignate lui
-  const myFirmsList = firms.filter(firm => firm.assignedCD === currentUser); 
+  const myFirmsList = firms.filter(firm => firm.assignedCD === currentUser);
+
+  const today = new Date();
+  const sortedMyFirms = [...myFirmsList].sort((a, b) => {
+    const aIsPaused = a.pausedUntil && new Date(a.pausedUntil) >= today;
+    const bIsPaused = b.pausedUntil && new Date(b.pausedUntil) >= today;
+    if (aIsPaused && !bIsPaused) return 1;
+    if (!aIsPaused && bIsPaused) return -1;
+    return 0;
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; 
-  
+  const itemsPerPage = 6;
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentFirms = myFirmsList.slice(indexOfFirstItem, indexOfLastItem);
-  
+  const currentFirms = sortedMyFirms.slice(indexOfFirstItem, indexOfLastItem);
+
   const totalPages = Math.max(1, Math.ceil(myFirmsList.length / itemsPerPage));
 
   return {

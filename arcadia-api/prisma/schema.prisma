@@ -26,7 +26,8 @@ model Firm {
   name       String
   email       String?
   status     String?
-  details    String?
+  details     String?
+  pausedUntil String?
 
   // Relation: Assigned to a specific user (Assigned Cd)
   assignedCd String?

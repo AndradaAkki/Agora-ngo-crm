@@ -121,11 +121,13 @@ export function useFirmProfileLogic({ firms }) {
   const isPaused = firm?.pausedUntil && new Date(firm.pausedUntil) >= new Date();
   
   const handleTogglePause = () => {
-    if (isPaused) {
-      updateFirm({ variables: { id: firm.id, pausedUntil: null } });
-    } else {
-      setIsPauseModalOpen(true);
-    }
+    setPauseDate(firm.pausedUntil || '');
+    setIsPauseModalOpen(true);
+  };
+
+  const handleResumePause = () => {
+    updateFirm({ variables: { id: firm.id, pausedUntil: null } });
+    setIsPauseModalOpen(false);
   };
 
   const handleSavePause = () => {
@@ -153,6 +155,6 @@ export function useFirmProfileLogic({ firms }) {
     handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
     handleAddTask, toggleTask: handleToggleTask, deleteTask: handleDeleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
-    isPaused, handleTogglePause, handleSavePause, handleSaveActivity
+    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity
   };
 }

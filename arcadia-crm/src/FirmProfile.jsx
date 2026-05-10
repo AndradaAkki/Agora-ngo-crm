@@ -24,7 +24,7 @@ function FirmProfile({ firms, setFirms }) {
     handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
     handleAddTask, toggleTask, deleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
-    isPaused, handleTogglePause, handleSavePause, handleSaveActivity
+    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity
   } = useFirmProfileLogic({ firms });
 
   if (!firm) {
@@ -121,7 +121,7 @@ function FirmProfile({ firms, setFirms }) {
                 }}
               >
                 <PauseCircle size={18} /> 
-                {isPaused ? `Resume Contact (Paused until ${firm.pausedUntil})` : 'Pause all contact'}
+                {isPaused ? `Paused until ${new Date(firm.pausedUntil).toLocaleDateString()}` : 'Pause all contact'}
               </button>
 
               <button 
@@ -346,7 +346,7 @@ function FirmProfile({ firms, setFirms }) {
           <div className="modal-overlay">
             <div className="modal-content" style={{ width: '380px' }}>
               <button className="modal-close" onClick={() => setIsPauseModalOpen(false)}>✖</button>
-              <h3 style={{ margin: '0 0 20px 0', color: '#092C4C' }}>Pause Contact</h3>
+              <h3 style={{ margin: '0 0 20px 0', color: '#092C4C' }}>{isPaused ? 'Edit Pause Date' : 'Pause Contact'}</h3>
               
               <p style={{ fontSize: '14px', color: '#7E92A2', marginBottom: '20px' }}>
                 Select a date. This firm will be visually greyed out in your databases until the selected date passes.
@@ -363,7 +363,12 @@ function FirmProfile({ firms, setFirms }) {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
                 <button className="btn-cancel" onClick={() => setIsPauseModalOpen(false)}>Cancel</button>
-                <button className="btn-primary" onClick={handleSavePause} disabled={!pauseDate}>Confirm Pause</button>
+                {isPaused && (
+                  <button className="btn-danger" onClick={handleResumePause}>Remove Pause</button>
+                )}
+                <button className="btn-primary" onClick={handleSavePause} disabled={!pauseDate}>
+                  {isPaused ? 'Update Date' : 'Confirm Pause'}
+                </button>
               </div>
             </div>
           </div>
