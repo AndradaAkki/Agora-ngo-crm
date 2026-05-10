@@ -3,6 +3,13 @@ const pubsub = new PubSub();
 
 // 1. The GraphQL Schema definition
 const typeDefs = `#graphql
+  type FirmEventStatus {
+    id: ID!
+    status: String!
+    eventId: ID!
+    eventName: String
+  }
+
   type Firm {
     id: ID!
     name: String!
@@ -14,6 +21,7 @@ const typeDefs = `#graphql
     contracts: [Contract]
     history: [History]
     tasks: [Task]
+    firmEventStatuses: [FirmEventStatus]
   }
 
   type Contract {
@@ -31,29 +39,16 @@ const typeDefs = `#graphql
     timestamp: String
   }
 
-  type PaginatedFirms {
-    totalItems: Int!
-    currentPage: Int!
-    totalPages: Int!
-    data: [Firm!]!
+  type Event {
+    id: ID!
+    name: String!
+    year: Int
   }
 
-  type Query {
-    getFirms(page: Int!, limit: Int!): PaginatedFirms!
-  }
-
-  type Mutation {
-    addFirm(name: String!, email: String, status: String): Firm!
-    updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String, pausedUntil: String): Firm!    deleteFirm(id: ID!): Firm!
-    addTask(firmId: ID!, desc: String!): Task!
-    toggleTask(taskId: ID!): Task!
-    deleteTask(taskId: ID!): Task!
-    addHistory(firmId: ID!, type: String!, desc: String!, author: String!, date: String!): History!
-    deleteHistory(historyId: ID!): History!
-  }
-
-  type Subscription {
-    firmAdded: Firm!
+  type Task {
+    id: ID!
+    desc: String!
+    isDone: Boolean!
   }
 
   type User {
@@ -64,11 +59,34 @@ const typeDefs = `#graphql
     role: String
     isAdmin: Boolean!
   }
-    type Task {
-  id: ID!
-  desc: String!
-  isDone: Boolean!
-}
+
+  type PaginatedFirms {
+    totalItems: Int!
+    currentPage: Int!
+    totalPages: Int!
+    data: [Firm!]!
+  }
+
+  type Query {
+    getFirms(page: Int!, limit: Int!): PaginatedFirms!
+    getEvents: [Event!]!
+  }
+
+  type Mutation {
+    addFirm(name: String!, email: String, status: String): Firm!
+    updateFirm(id: ID!, name: String, mail: String, status: String, details: String, assignedCD: String, pausedUntil: String): Firm!
+    deleteFirm(id: ID!): Firm!
+    addTask(firmId: ID!, desc: String!): Task!
+    toggleTask(taskId: ID!): Task!
+    deleteTask(taskId: ID!): Task!
+    addHistory(firmId: ID!, type: String!, desc: String!, author: String!, date: String!): History!
+    deleteHistory(historyId: ID!): History!
+    setFirmEventStatus(firmId: ID!, eventId: ID!, status: String!): FirmEventStatus!
+  }
+
+  type Subscription {
+    firmAdded: Firm!
+  }
 `;
 
 // 2. The Resolvers (Where Prisma talks to PostgreSQL)
@@ -78,31 +96,26 @@ const resolvers = {
       const skip = (page - 1) * limit;
       
       const [firms, totalItems] = await prisma.$transaction([
-        prisma.firm.findMany({ 
-          skip, 
+        prisma.firm.findMany({
+          skip,
           take: limit,
-          // Include the relational tables from Prisma
           include: {
             history: true,
-            contracts: {
-              include: {
-                event: true 
-              }
-            },
-            tasks: true
+            contracts: { include: { event: true } },
+            tasks: true,
+            firmEventStatuses: { include: { event: true } }
           }
         }),
         prisma.firm.count()
       ]);
-      
-      // Map the complex Prisma relations to the simple GraphQL schema
+
       const formattedFirms = firms.map(firm => ({
         ...firm,
         contracts: firm.contracts.map(c => ({
           id: c.id,
           status: c.status,
-          name: c.event?.name || "Unknown Event", 
-          steps: [] 
+          name: c.event?.name || "Unknown Event",
+          steps: []
         })),
         history: firm.history.map(h => ({
           id: h.id,
@@ -110,18 +123,28 @@ const resolvers = {
           details: h.details,
           author: h.author || null,
           timestamp: h.timestamp ? h.timestamp.toISOString() : null
+        })),
+        firmEventStatuses: firm.firmEventStatuses.map(fes => ({
+          id: fes.id,
+          status: fes.status,
+          eventId: fes.eventId,
+          eventName: fes.event?.name || null
         }))
       }));
 
-      return { 
-        totalItems, 
-        currentPage: page, 
-        totalPages: Math.ceil(totalItems / limit), 
-        data: formattedFirms 
+      return {
+        totalItems,
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        data: formattedFirms
       };
+    },
+
+    getEvents: async (_, __, { prisma }) => {
+      return await prisma.event.findMany({ orderBy: { year: 'desc' } });
     }
   },
-  
+
   Mutation: {
     addFirm: async (_, args, { prisma }) => {
       const newFirm = await prisma.firm.create({
@@ -172,6 +195,20 @@ const resolvers = {
     },
     deleteHistory: async (_, { historyId }, { prisma }) => {
       return await prisma.history.delete({ where: { id: historyId } });
+    },
+    setFirmEventStatus: async (_, { firmId, eventId, status }, { prisma }) => {
+      const record = await prisma.firmEventStatus.upsert({
+        where: { firmId_eventId: { firmId, eventId } },
+        update: { status },
+        create: { firmId, eventId, status },
+        include: { event: true }
+      });
+      return {
+        id: record.id,
+        status: record.status,
+        eventId: record.eventId,
+        eventName: record.event?.name || null
+      };
     }
   },
 

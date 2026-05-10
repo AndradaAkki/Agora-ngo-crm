@@ -30,6 +30,12 @@ export const GET_FIRMS = gql`
           author
           timestamp
         }
+        firmEventStatuses {
+          id
+          status
+          eventId
+          eventName
+        }
       }
     }
   }

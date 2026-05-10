@@ -15,7 +15,13 @@ function Dashboard({ firms, onAddFirm }) {
     setCurrentPage,
     totalPages,
     totalItems,
-    handleAddFirm
+    handleAddFirm,
+    selectedEvent,
+    setSelectedEvent,
+    availableEvents,
+    getEventStatus,
+    handleSetFirmStatus,
+    EVENT_STATUSES
   } = useDashboardLogic({ firms, onAddFirm });
 
   return (
@@ -68,9 +74,16 @@ function Dashboard({ firms, onAddFirm }) {
              <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                <Mail size={16} /> Mass Mail
              </button>
-             <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               Event: CariereInIT <ChevronDown size={16} color="#7E92A2" />
-             </button>
+             <select
+               className="btn-outline"
+               style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+               value={selectedEvent}
+               onChange={(e) => { setSelectedEvent(e.target.value); setCurrentPage(1); }}
+             >
+               {availableEvents.map(ev => (
+                 <option key={ev} value={ev}>{ev === 'All Events' ? 'All Events' : `Event: ${ev}`}</option>
+               ))}
+             </select>
              <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                Filter <Filter size={16} color="#7E92A2" />
              </button>
@@ -85,7 +98,7 @@ function Dashboard({ firms, onAddFirm }) {
                 <th>Primary Contact</th>
                 <th>Primary email</th>
                 <th>Primary Phone Nr</th>
-                <th>Status</th>
+                <th>{selectedEvent === 'All Events' ? 'CRM Status' : 'Sponsorship Status'}</th>
                 <th>Profile</th>
               </tr>
             </thead>
@@ -99,9 +112,22 @@ function Dashboard({ firms, onAddFirm }) {
                     <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
                     <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
                     <td>
-                      <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                        {firm.status ? firm.status.toUpperCase() : 'UNKNOWN'}
-                      </span>
+                      {selectedEvent === 'All Events' ? (
+                        <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                          {firm.status ? firm.status.toUpperCase() : 'UNKNOWN'}
+                        </span>
+                      ) : (
+                        <select
+                          className="form-input"
+                          style={{ margin: 0, padding: '4px 8px', fontSize: '13px' }}
+                          value={getEventStatus(firm)}
+                          onChange={(e) => handleSetFirmStatus(firm.id, e.target.value)}
+                        >
+                          {EVENT_STATUSES.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>

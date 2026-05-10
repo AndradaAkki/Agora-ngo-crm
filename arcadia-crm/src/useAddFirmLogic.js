@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
-import { GET_FIRMS } from './useDashboardLogic'; // Imports the query to refresh the list
+import { GET_FIRMS } from './useAppLogic';
 
 // Update this mutation to match the exact arguments your backend resolver expects
 export const ADD_FIRM = gql`

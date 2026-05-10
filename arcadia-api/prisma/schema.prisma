@@ -34,10 +34,11 @@ model Firm {
   assignee   User?   @relation("UserToFirm", fields: [assignedCd], references: [id])
 
   // Downstream Relations
-  contracts  Contract[]
-  contacts   Contact[]
-  history    History[]
-  tasks Task[]
+  contracts         Contract[]
+  contacts          Contact[]
+  history           History[]
+  tasks             Task[]
+  firmEventStatuses FirmEventStatus[]
 }
 
 model Event {
@@ -46,7 +47,21 @@ model Event {
   year     Int
   details  String?
 
-  contracts Contract[]
+  contracts         Contract[]
+  firmEventStatuses FirmEventStatus[]
+}
+
+model FirmEventStatus {
+  id      String @id @default(uuid())
+  status  String @default("Not Started")
+
+  firmId  String
+  firm    Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, eventId])
 }
 
 model Contract {
