@@ -37,8 +37,8 @@ function FirmProfile({ firms, setFirms }) {
   const profileTasks = firm.tasks || [];
   
   // History sorting (Newest first)
-  const profileHistory = firm.history 
-    ? [...firm.history].sort((a, b) => new Date(b.date) - new Date(a.date)) 
+  const profileHistory = firm.history
+    ? [...firm.history].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     : [];
   
   const currentYear = new Date().getFullYear();
@@ -261,7 +261,7 @@ function FirmProfile({ firms, setFirms }) {
             </div>
             <div className="profile-card-body">
               {profileHistory.map((hist, i) => {
-                const isOld = new Date(hist.date).getFullYear() < currentYear;
+                const isOld = new Date(hist.timestamp).getFullYear() < currentYear;
 
                 return (
                   <div key={i} style={{ display: 'flex', marginBottom: '20px', gap: '15px', opacity: isOld ? 0.6 : 1, transition: 'opacity 0.2s', position: 'relative' }}>
@@ -270,7 +270,7 @@ function FirmProfile({ firms, setFirms }) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <strong style={{ color: isOld ? '#7E92A2' : '#092C4C' }}>{hist.type}</strong>
-                          <span style={{ fontSize: '12px', color: '#7E92A2', fontWeight: isOld ? 'normal' : 'bold', marginLeft: '10px' }}>{hist.date}</span>
+                          <span style={{ fontSize: '12px', color: '#7E92A2', fontWeight: isOld ? 'normal' : 'bold', marginLeft: '10px' }}>{hist.timestamp ? new Date(hist.timestamp).toLocaleDateString() : ''}</span>
                         </div>
                         
                         <button 
@@ -281,8 +281,8 @@ function FirmProfile({ firms, setFirms }) {
                           <Trash size={14} />
                         </button>
                       </div>
-                      <p style={{ margin: '5px 0', fontSize: '14px', color: '#526477' }}>{hist.desc}</p>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#7E92A2' }}>by {hist.author}</p>
+                      <p style={{ margin: '5px 0', fontSize: '14px', color: '#526477' }}>{hist.details}</p>
+                      {hist.author && <p style={{ margin: 0, fontSize: '12px', color: '#7E92A2' }}>by {hist.author}</p>}
                     </div>
                   </div>
                 )

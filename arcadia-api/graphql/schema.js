@@ -27,6 +27,7 @@ const typeDefs = `#graphql
     id: ID!
     type: String
     details: String
+    author: String
     timestamp: String
   }
 
@@ -105,8 +106,9 @@ const resolvers = {
         })),
         history: firm.history.map(h => ({
           id: h.id,
-          type: h.details.split(' ')[0] || 'Log', 
+          type: h.details.split(' ')[0] || 'Log',
           details: h.details,
+          author: h.author || null,
           timestamp: h.timestamp ? h.timestamp.toISOString() : null
         }))
       }));
@@ -165,7 +167,7 @@ const resolvers = {
     },
     addHistory: async (_, { firmId, type, desc, author, date }, { prisma }) => {
       return await prisma.history.create({
-        data: { type: type, details: desc, timestamp: new Date(date), firmId: firmId }
+        data: { details: desc, author: author, timestamp: new Date(date), firmId: firmId }
       });
     },
     deleteHistory: async (_, { historyId }, { prisma }) => {

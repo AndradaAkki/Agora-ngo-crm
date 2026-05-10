@@ -27,6 +27,7 @@ export const GET_FIRMS = gql`
           id
           type
           details
+          author
           timestamp
         }
       }

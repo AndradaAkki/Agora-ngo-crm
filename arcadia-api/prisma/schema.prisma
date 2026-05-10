@@ -74,16 +74,17 @@ model Contact {
 }
 
 model History {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   details   String
-  
+  author    String?
+
   // DateTime handles both exact times and specific selected dates.
   // It defaults to 'right now', but you can pass any date to override it.
-  timestamp DateTime @default(now()) 
+  timestamp DateTime  @default(now())
 
-  // New Relation: Properly linked to the User table
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  // Optional until auth is wired up
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 
   // Existing Relation
   firmId    String
