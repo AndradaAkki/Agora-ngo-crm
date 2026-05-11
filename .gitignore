@@ -20,3 +20,9 @@
 # OS generated files
 .DS_Store
 Thumbs.db
+
+CLAUDE.md
+.claude/
+
+# Project planning files
+TODO.md
