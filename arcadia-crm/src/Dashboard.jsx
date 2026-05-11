@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter, Plus } from 'lucide-react';
+import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, Filter, Plus } from 'lucide-react';
 import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
+import CustomDropdown from './CustomDropdown';
+import { STATUS_OPTION_STYLES, EVENT_STATUSES } from './statusConfig';
 import './App.css';
 
 function Dashboard({ firms, onAddFirm }) {
@@ -15,7 +17,12 @@ function Dashboard({ firms, onAddFirm }) {
     setCurrentPage,
     totalPages,
     totalItems,
-    handleAddFirm
+    handleAddFirm,
+    selectedEvent,
+    setSelectedEvent,
+    availableEvents,
+    getEventStatus,
+    handleSetFirmStatus,
   } = useDashboardLogic({ firms, onAddFirm });
 
   return (
@@ -68,9 +75,13 @@ function Dashboard({ firms, onAddFirm }) {
              <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                <Mail size={16} /> Mass Mail
              </button>
-             <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               Event: CariereInIT <ChevronDown size={16} color="#7E92A2" />
-             </button>
+             <CustomDropdown
+               variant="pill"
+               value={selectedEvent}
+               options={availableEvents}
+               getLabel={(ev) => ev === 'All Events' ? 'All Events' : `Event: ${ev}`}
+               onChange={(ev) => { setSelectedEvent(ev); setCurrentPage(1); }}
+             />
              <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                Filter <Filter size={16} color="#7E92A2" />
              </button>
@@ -85,30 +96,43 @@ function Dashboard({ firms, onAddFirm }) {
                 <th>Primary Contact</th>
                 <th>Primary email</th>
                 <th>Primary Phone Nr</th>
-                <th>Status</th>
+                <th>{selectedEvent === 'All Events' ? 'CRM Status' : 'Sponsorship Status'}</th>
                 <th>Profile</th>
               </tr>
             </thead>
             <tbody>
-              {currentFirms.map((firm) => (
-                <tr key={firm.id} className="table-row">
-                  <td className="firm-name-cell"><strong>{firm.name}</strong></td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.contactName || 'N/A'}</td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
-                  
-                  <td>
-                    <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                      {firm.status ? firm.status.toUpperCase() : 'UNKNOWN'}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>
-                      <LogOut size={18} color="#7E92A2"/>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {currentFirms.map((firm) => {
+                const isPaused = firm.pausedUntil && new Date(firm.pausedUntil) >= new Date();
+                const primary = firm.contacts?.find(c => c.isPrimary) || firm.contacts?.[0];
+                return (
+                  <tr key={firm.id} className="table-row" style={{ opacity: isPaused ? 0.4 : 1, transition: 'opacity 0.2s' }}>
+                    <td className="firm-name-cell"><strong>{firm.name}</strong></td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.name || 'N/A'}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.phoneNumber || 'N/A'}</td>
+                    <td>
+                      {selectedEvent === 'All Events' ? (
+                        <span className={`status-badge status-${getEventStatus(firm).toLowerCase().replace(/\s+/g, '-')}`}>
+                          {getEventStatus(firm)}
+                        </span>
+                      ) : (
+                        <CustomDropdown
+                          variant="badge"
+                          value={getEventStatus(firm)}
+                          options={EVENT_STATUSES}
+                          optionStyles={STATUS_OPTION_STYLES}
+                          onChange={(status) => handleSetFirmStatus(firm.id, status)}
+                        />
+                      )}
+                    </td>
+                    <td>
+                      <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>
+                        <LogOut size={18} color="#7E92A2"/>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

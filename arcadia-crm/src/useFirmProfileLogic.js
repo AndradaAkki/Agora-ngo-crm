@@ -1,15 +1,70 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import {  gql } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client/react';
 
-export function useFirmProfileLogic({ firms, setFirms }) {
+// 1. Definim mutatiile GraphQL
+const UPDATE_FIRM_DETAILS = gql`
+  mutation UpdateFirmDetails($id: ID!, $details: String, $pausedUntil: String) {
+    updateFirm(id: $id, details: $details, pausedUntil: $pausedUntil) { id details pausedUntil }
+  }
+`;
+
+const DELETE_FIRM = gql`
+  mutation DeleteFirm($id: ID!) { deleteFirm(id: $id) { id } }
+`;
+
+const ADD_TASK = gql`
+  mutation AddTask($firmId: ID!, $desc: String!) { addTask(firmId: $firmId, desc: $desc) { id desc isDone } }
+`;
+
+const TOGGLE_TASK = gql`
+  mutation ToggleTask($taskId: ID!) { toggleTask(taskId: $taskId) { id isDone } }
+`;
+
+const DELETE_TASK = gql`
+  mutation DeleteTask($taskId: ID!) { deleteTask(taskId: $taskId) { id } }
+`;
+
+const ADD_HISTORY = gql`
+  mutation AddHistory($firmId: ID!, $type: String!, $desc: String!, $author: String!, $date: String!) {
+    addHistory(firmId: $firmId, type: $type, desc: $desc, author: $author, date: $date) { id }
+  }
+`;
+
+const DELETE_HISTORY = gql`
+  mutation DeleteHistory($historyId: ID!) { deleteHistory(historyId: $historyId) { id } }
+`;
+
+const GET_EVENTS = gql`
+  query GetEvents { getEvents { id name } }
+`;
+
+const ADD_CONTRACT = gql`
+  mutation AddContract($firmId: ID!, $eventId: ID!) {
+    addContract(firmId: $firmId, eventId: $eventId) { id name status steps }
+  }
+`;
+
+const DELETE_CONTRACT = gql`
+  mutation DeleteContract($contractId: ID!) {
+    deleteContract(contractId: $contractId) { id }
+  }
+`;
+
+const UPDATE_CONTRACT_STEPS = gql`
+  mutation UpdateContractSteps($contractId: ID!, $steps: [String!]!) {
+    updateContractSteps(contractId: $contractId, steps: $steps) { id steps }
+  }
+`;
+
+// Atentie: am scos setFirms din props, nu mai avem nevoie de el!
+export function useFirmProfileLogic({ firms }) {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // Using String() ensures it matches whether the ID is a string (UUID) or an int
   const firm = firms?.find(f => String(f.id) === String(id));
-  
-  // --- Modals State ---
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isContactManagerOpen, setIsContactManagerOpen] = useState(false);
@@ -18,119 +73,126 @@ export function useFirmProfileLogic({ firms, setFirms }) {
   const [isDeleteHistoryModalOpen, setIsDeleteHistoryModalOpen] = useState(false);
   const [historyToDelete, setHistoryToDelete] = useState(null);
 
-  // --- Input States ---
+  const [localDetails, setLocalDetails] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [pauseDate, setPauseDate] = useState('');
   const [activityData, setActivityData] = useState({ type: 'Call', desc: '', date: new Date().toISOString().split('T')[0] });
+  const [isAddContractOpen, setIsAddContractOpen] = useState(false);
+  const [pendingDeleteContractId, setPendingDeleteContractId] = useState(null);
+  const [selectedNewEventId, setSelectedNewEventId] = useState('');
 
-  // --- Handlers ---
-  const handleConfirmDelete = () => {
-    const updatedFirms = firms.filter(f => f.id !== firm.id);
-    setFirms(updatedFirms);
-    navigate('/dashboard');
+  useEffect(() => {
+    if (firm) setLocalDetails(firm.details || '');
+  }, [firm?.details]);
+
+  // 2. Initializam mutatiile
+  const { data: eventsData } = useQuery(GET_EVENTS);
+  const events = eventsData?.getEvents || [];
+
+  const [updateFirm] = useMutation(UPDATE_FIRM_DETAILS, { refetchQueries: ['GetFirms'] });
+  const [deleteFirm] = useMutation(DELETE_FIRM, { onCompleted: () => navigate('/dashboard'), refetchQueries: ['GetFirms'] });
+  const [addTask] = useMutation(ADD_TASK, { refetchQueries: ['GetFirms'] });
+  const [toggleTask] = useMutation(TOGGLE_TASK, { refetchQueries: ['GetFirms'] });
+  const [deleteTask] = useMutation(DELETE_TASK, { refetchQueries: ['GetFirms'] });
+  const [addHistory] = useMutation(ADD_HISTORY, { refetchQueries: ['GetFirms'] });
+  const [deleteHistory] = useMutation(DELETE_HISTORY, { refetchQueries: ['GetFirms'] });
+  const [addContract] = useMutation(ADD_CONTRACT, { refetchQueries: ['GetFirms'] });
+  const [deleteContractMutation] = useMutation(DELETE_CONTRACT, { refetchQueries: ['GetFirms'] });
+  const [updateContractSteps] = useMutation(UPDATE_CONTRACT_STEPS);
+
+  // 3. Handlere conectate la baza de date
+  const handleConfirmDelete = () => deleteFirm({ variables: { id: firm.id } });
+  const handleSaveEdit = () => setIsEditModalOpen(false); 
+  const openContactManager = () => { setIsEditModalOpen(false); setIsContactManagerOpen(true); };
+
+  const handleDetailsBlur = () => {
+    if (localDetails !== firm.details) {
+      updateFirm({ variables: { id: firm.id, details: localDetails } });
+    }
   };
 
-  const handleSaveEdit = (updatedFirm) => {
-    const updatedFirms = firms.map(f => f.id === updatedFirm.id ? updatedFirm : f);
-    setFirms(updatedFirms);
-    setIsEditModalOpen(false);
-  };
-
-  const handleDetailsChange = (e) => {
-    const updatedFirms = firms.map(f => 
-      f.id === firm.id ? { ...f, details: e.target.value } : f
-    );
-    setFirms(updatedFirms);
-  };
-
-  const openContactManager = () => {
-    setIsEditModalOpen(false);
-    setIsContactManagerOpen(true);
-  };
-
-  // --- Task Handlers ---
   const handleAddTask = (e) => {
     if (e.key === 'Enter' && newTaskDesc.trim() !== '') {
-      const newTask = { id: Date.now(), desc: newTaskDesc, isDone: false };
-      const updatedTasks = [...(firm.tasks || []), newTask];
-      
-      const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, tasks: updatedTasks } : f);
-      setFirms(updatedFirms);
+      addTask({ variables: { firmId: firm.id, desc: newTaskDesc } });
       setNewTaskDesc('');
     }
   };
 
-  const toggleTask = (taskId) => {
-    const updatedTasks = (firm.tasks || []).map(t => t.id === taskId ? { ...t, isDone: !t.isDone } : t);
-    const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, tasks: updatedTasks } : f);
-    setFirms(updatedFirms);
-  };
+  const handleToggleTask = (taskId) => toggleTask({ variables: { taskId } });
+  const handleDeleteTask = (taskId) => deleteTask({ variables: { taskId } });
 
-  const deleteTask = (taskId) => {
-    const updatedTasks = (firm.tasks || []).filter(t => t.id !== taskId);
-    const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, tasks: updatedTasks } : f);
-    setFirms(updatedFirms);
-  };
-
-  // --- History Handlers ---
-  const promptDeleteHistory = (hist) => {
-    setHistoryToDelete(hist);
-    setIsDeleteHistoryModalOpen(true);
-  };
-
+  const promptDeleteHistory = (hist) => { setHistoryToDelete(hist); setIsDeleteHistoryModalOpen(true); };
+  
   const confirmDeleteHistory = () => {
     if (historyToDelete) {
-      const updatedHistory = (firm.history || []).filter(h => h !== historyToDelete);
-      const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, history: updatedHistory } : f);
-      setFirms(updatedFirms);
+      deleteHistory({ variables: { historyId: String(historyToDelete.id) } });
       setIsDeleteHistoryModalOpen(false);
       setHistoryToDelete(null);
     }
   };
+  
+  const cancelDeleteHistory = () => { setIsDeleteHistoryModalOpen(false); setHistoryToDelete(null); };
 
-  const cancelDeleteHistory = () => {
-    setIsDeleteHistoryModalOpen(false);
-    setHistoryToDelete(null);
+  const handleAddContract = async () => {
+    if (!selectedNewEventId) return;
+    await addContract({ variables: { firmId: firm.id, eventId: selectedNewEventId } });
+    setIsAddContractOpen(false);
+    setSelectedNewEventId('');
+  };
+
+  const promptDeleteContract = (contractId) => setPendingDeleteContractId(contractId);
+  const cancelDeleteContract = () => setPendingDeleteContractId(null);
+  const confirmDeleteContract = () => {
+    if (pendingDeleteContractId) {
+      deleteContractMutation({ variables: { contractId: pendingDeleteContractId } });
+      setPendingDeleteContractId(null);
+    }
+  };
+
+  const handleStepToggle = (contractId, step, checked) => {
+    const contract = firm.contracts?.find(c => c.id === contractId);
+    if (!contract) return;
+    const newSteps = checked
+      ? [...(contract.steps || []), step]
+      : (contract.steps || []).filter(s => s !== step);
+    updateContractSteps({ variables: { contractId, steps: newSteps } });
   };
 
   const handleSaveActivity = () => {
     if (activityData.desc.trim() !== '') {
-      const newActivity = {
-        type: activityData.type,
-        desc: activityData.desc,
-        date: activityData.date,
-        author: 'Alex Thompson' 
-      };
-      const updatedHistory = [...(firm.history || []), newActivity];
-      const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, history: updatedHistory } : f);
-      setFirms(updatedFirms);
+      addHistory({ 
+        variables: { 
+          firmId: firm.id, 
+          type: activityData.type, 
+          desc: activityData.desc, 
+          author: 'Alex Thompson', 
+          date: activityData.date 
+        } 
+      });
       setIsAddActivityOpen(false);
-      // Reset form
       setActivityData({ type: 'Call', desc: '', date: new Date().toISOString().split('T')[0] });
     }
   };
 
-  // --- Pause Handlers ---
   const isPaused = firm?.pausedUntil && new Date(firm.pausedUntil) >= new Date();
   
   const handleTogglePause = () => {
-    if (isPaused) {
-      const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, pausedUntil: null } : f);
-      setFirms(updatedFirms);
-    } else {
-      setIsPauseModalOpen(true);
-    }
+    setPauseDate(firm.pausedUntil || '');
+    setIsPauseModalOpen(true);
+  };
+
+  const handleResumePause = () => {
+    updateFirm({ variables: { id: firm.id, pausedUntil: null } });
+    setIsPauseModalOpen(false);
   };
 
   const handleSavePause = () => {
     if (pauseDate) {
-      const updatedFirms = firms.map(f => f.id === firm.id ? { ...f, pausedUntil: pauseDate } : f);
-      setFirms(updatedFirms);
+      updateFirm({ variables: { id: firm.id, pausedUntil: pauseDate } });
       setIsPauseModalOpen(false);
     }
   };
 
-  // Cookies
   useEffect(() => {
     if (firm) {
       let activityLog = Cookies.get('userActivity');
@@ -142,19 +204,17 @@ export function useFirmProfileLogic({ firms, setFirms }) {
   }, [firm?.id]);
 
   return {
-    firm, navigate,
-    isEditModalOpen, setIsEditModalOpen,
-    isDeleteModalOpen, setIsDeleteModalOpen,
-    isContactManagerOpen, setIsContactManagerOpen,
-    isAddActivityOpen, setIsAddActivityOpen,
-    isPauseModalOpen, setIsPauseModalOpen,
-    isDeleteHistoryModalOpen, setIsDeleteHistoryModalOpen,
-    newTaskDesc, setNewTaskDesc,
-    pauseDate, setPauseDate,
-    activityData, setActivityData,
-    handleConfirmDelete, handleSaveEdit, handleDetailsChange, openContactManager,
-    handleAddTask, toggleTask, deleteTask,
+    firm, navigate, isEditModalOpen, setIsEditModalOpen, isDeleteModalOpen, setIsDeleteModalOpen,
+    isContactManagerOpen, setIsContactManagerOpen, isAddActivityOpen, setIsAddActivityOpen,
+    isPauseModalOpen, setIsPauseModalOpen, isDeleteHistoryModalOpen, setIsDeleteHistoryModalOpen,
+    localDetails, setLocalDetails, newTaskDesc, setNewTaskDesc, pauseDate, setPauseDate, activityData, setActivityData,
+    handleConfirmDelete, handleSaveEdit, handleDetailsBlur, openContactManager,
+    handleAddTask, toggleTask: handleToggleTask, deleteTask: handleDeleteTask,
     promptDeleteHistory, confirmDeleteHistory, cancelDeleteHistory,
-    isPaused, handleTogglePause, handleSavePause, handleSaveActivity
+    isPaused, handleTogglePause, handleResumePause, handleSavePause, handleSaveActivity,
+    isAddContractOpen, setIsAddContractOpen, pendingDeleteContractId,
+    events, selectedNewEventId, setSelectedNewEventId,
+    handleAddContract, promptDeleteContract, cancelDeleteContract, confirmDeleteContract,
+    handleStepToggle
   };
 }

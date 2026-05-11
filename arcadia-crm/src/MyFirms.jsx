@@ -81,25 +81,28 @@ function MyFirms({ firms }) {
               </tr>
             </thead>
             <tbody>
-              {currentFirms.map((firm) => (
-                <tr key={firm.id} className="table-row">
-                  <td className="firm-name-cell"><strong>{firm.name}</strong></td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.contactName || 'N/A'}</td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
-                  <td style={{ color: '#526477', fontSize: '14px' }}>{firm.phone || 'N/A'}</td>
-                  <td>
-                    {/* Am adaugat un fallback safe pentru status, in cazul in care vine null din baza de date */}
-                    <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                      {firm.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>
-                      <LogOut size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {currentFirms.map((firm) => {
+                const isPaused = firm.pausedUntil && new Date(firm.pausedUntil) >= new Date();
+                const primary = firm.contacts?.find(c => c.isPrimary) || firm.contacts?.[0];
+                return (
+                  <tr key={firm.id} className="table-row" style={{ opacity: isPaused ? 0.4 : 1, transition: 'opacity 0.2s' }}>
+                    <td className="firm-name-cell"><strong>{firm.name}</strong></td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.name || 'N/A'}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{primary?.phoneNumber || 'N/A'}</td>
+                    <td>
+                      <span className={`status-badge status-${(firm.status || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                        {firm.status}
+                      </span>
+                    </td>
+                    <td>
+                      <button className="profile-icon-btn" onClick={() => navigate(`/firm/${firm.id}`)}>
+                        <LogOut size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

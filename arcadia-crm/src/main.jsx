@@ -37,12 +37,15 @@ const cache = new InMemoryCache({
     Query: {
       fields: {
         getFirms: {
-          keyArgs: false, // Don't cache pages separately
-          merge(existing = { data: [] }, incoming) {
-            return {
-              ...incoming,
-              data: [...existing.data, ...incoming.data],
-            };
+          keyArgs: false,
+          merge(existing = { data: [] }, incoming, { args }) {
+            if (args?.page && args.page > 1) {
+              return {
+                ...incoming,
+                data: [...existing.data, ...incoming.data],
+              };
+            }
+            return incoming;
           },
         },
       },

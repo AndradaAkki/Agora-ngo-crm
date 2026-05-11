@@ -15,6 +15,41 @@ export const GET_FIRMS = gql`
         name
         email
         status
+        details
+        pausedUntil
+        assignedCD
+        tasks {
+          id
+          desc
+          isDone
+        }
+        contacts {
+          id
+          name
+          email
+          phoneNumber
+          position
+          isPrimary
+        }
+        history {
+          id
+          type
+          details
+          author
+          timestamp
+        }
+        contracts {
+          id
+          name
+          status
+          steps
+        }
+        firmEventStatuses {
+          id
+          status
+          eventId
+          eventName
+        }
       }
     }
   }
@@ -69,7 +104,7 @@ export function useAppLogic() {
 
   // 1. APOLLO QUERIES
   const { loading: isInitialLoading, error, data, fetchMore, refetch } = useQuery(GET_FIRMS, {
-    variables: { page: 1, limit: 10 },
+    variables: { page: 1, limit: 100 },
     fetchPolicy: 'cache-first', 
   });
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Plus, Users, Copy, Activity, Table as TableIcon, PieChart as ChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as BarTooltip } from 'recharts';
-import { useEventsStatsLogic } from './useEventsStatsLogic'; // <-- Importăm logica
+import { useEventsStatsLogic } from './useEventsStatsLogic';
+import CustomDropdown from './CustomDropdown';
 import './App.css';
 
 function EventsStats() {
@@ -54,16 +55,12 @@ function EventsStats() {
                 Add New Event <Plus size={16} />
             </button>
             
-            <select 
-              className="btn-outline" 
-              style={{ background: 'white', padding: '10px 16px', outline: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#092C4C', fontWeight: '600' }}
+            <CustomDropdown
+              variant="pill"
               value={selectedEvent}
-              onChange={(e) => setSelectedEvent(e.target.value)}
-            >
-              {availableEvents.map(eventName => (
-                <option key={eventName} value={eventName}>{eventName}</option>
-              ))}
-            </select>
+              options={availableEvents}
+              onChange={setSelectedEvent}
+            />
 
             <img src="https://i.pravatar.cc/150?u=andra" alt="User" className="avatar" />
           </div>

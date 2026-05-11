@@ -26,16 +26,19 @@ model Firm {
   name       String
   email       String?
   status     String?
-  details    String?
+  details     String?
+  pausedUntil String?
 
   // Relation: Assigned to a specific user (Assigned Cd)
   assignedCd String?
   assignee   User?   @relation("UserToFirm", fields: [assignedCd], references: [id])
 
   // Downstream Relations
-  contracts  Contract[]
-  contacts   Contact[]
-  history    History[]
+  contracts         Contract[]
+  contacts          Contact[]
+  history           History[]
+  tasks             Task[]
+  firmEventStatuses FirmEventStatus[]
 }
 
 model Event {
@@ -44,16 +47,30 @@ model Event {
   year     Int
   details  String?
 
-  contracts Contract[]
+  contracts         Contract[]
+  firmEventStatuses FirmEventStatus[]
+}
+
+model FirmEventStatus {
+  id      String @id @default(uuid())
+  status  String @default("Not Started")
+
+  firmId  String
+  firm    Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([firmId, eventId])
 }
 
 model Contract {
-  id       String  @id @default(uuid())
-  status   String?
+  id             String   @id @default(uuid())
+  status         String?
+  completedSteps String[]
 
-  // Foreign Keys
   firmId   String
-  firm     Firm    @relation(fields: [firmId], references: [id])
+  firm     Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
 
   eventId  String
   event    Event   @relation(fields: [eventId], references: [id])
@@ -73,18 +90,26 @@ model Contact {
 }
 
 model History {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   details   String
-  
+  author    String?
+
   // DateTime handles both exact times and specific selected dates.
   // It defaults to 'right now', but you can pass any date to override it.
-  timestamp DateTime @default(now()) 
+  timestamp DateTime  @default(now())
 
-  // New Relation: Properly linked to the User table
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  // Optional until auth is wired up
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 
   // Existing Relation
   firmId    String
   firm      Firm     @relation(fields: [firmId], references: [id])
+}
+model Task {
+  id       String  @id @default(uuid())
+  desc     String
+  isDone   Boolean @default(false)
+  firmId   String
+  firm     Firm    @relation(fields: [firmId], references: [id], onDelete: Cascade)
 }
