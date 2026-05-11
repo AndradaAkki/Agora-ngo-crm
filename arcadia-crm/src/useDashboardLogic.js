@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { useNavigate } from 'react-router-dom';
+import { EVENT_STATUSES } from './statusConfig';
 
 const GET_EVENTS = gql`
   query GetEvents {
@@ -18,7 +19,6 @@ const SET_FIRM_EVENT_STATUS = gql`
   }
 `;
 
-const EVENT_STATUSES = ['Not Started', 'Contacted', 'Waiting', 'Interested', 'Rejected', 'Accepted'];
 const STATUS_PRIORITY = ['Accepted', 'Interested', 'Waiting', 'Contacted', 'Not Started', 'Rejected'];
 
 export function useDashboardLogic({ firms, onAddFirm }) {
@@ -94,6 +94,5 @@ export function useDashboardLogic({ firms, onAddFirm }) {
     availableEvents,
     getEventStatus,
     handleSetFirmStatus,
-    EVENT_STATUSES
   };
 }

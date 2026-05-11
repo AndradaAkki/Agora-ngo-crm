@@ -3,16 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, Filter, Plus } from 'lucide-react';
 import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
+import CustomDropdown from './CustomDropdown';
+import { STATUS_OPTION_STYLES, EVENT_STATUSES } from './statusConfig';
 import './App.css';
-
-const STATUS_OPTION_STYLES = {
-  'Not Started': { background: '#F0F4F8', color: '#7E92A2' },
-  'Contacted':   { background: '#ECEFFE', color: '#514EF3' },
-  'Waiting':     { background: '#FFF4E5', color: '#FFC357' },
-  'Interested':  { background: '#E0F7F4', color: '#2DC8A8' },
-  'Rejected':    { background: '#FBEAEA', color: '#FE8084' },
-  'Accepted':    { background: '#d2f7ef', color: '#2DC8A8' },
-};
 
 function Dashboard({ firms, onAddFirm }) {
   const {
@@ -30,7 +23,6 @@ function Dashboard({ firms, onAddFirm }) {
     availableEvents,
     getEventStatus,
     handleSetFirmStatus,
-    EVENT_STATUSES
   } = useDashboardLogic({ firms, onAddFirm });
 
   return (
@@ -83,17 +75,13 @@ function Dashboard({ firms, onAddFirm }) {
              <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                <Mail size={16} /> Mass Mail
              </button>
-             <div className="select-wrap select-wrap-pill">
-               <span>{selectedEvent === 'All Events' ? 'All Events' : `Event: ${selectedEvent}`}</span>
-               <select
-                 value={selectedEvent}
-                 onChange={(e) => { setSelectedEvent(e.target.value); setCurrentPage(1); }}
-               >
-                 {availableEvents.map(ev => (
-                   <option key={ev} value={ev}>{ev === 'All Events' ? 'All Events' : `Event: ${ev}`}</option>
-                 ))}
-               </select>
-             </div>
+             <CustomDropdown
+               variant="pill"
+               value={selectedEvent}
+               options={availableEvents}
+               getLabel={(ev) => ev === 'All Events' ? 'All Events' : `Event: ${ev}`}
+               onChange={(ev) => { setSelectedEvent(ev); setCurrentPage(1); }}
+             />
              <button className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                Filter <Filter size={16} color="#7E92A2" />
              </button>
@@ -128,20 +116,13 @@ function Dashboard({ firms, onAddFirm }) {
                           {getEventStatus(firm)}
                         </span>
                       ) : (
-                        <div
-                          className="select-wrap select-wrap-badge"
-                          style={STATUS_OPTION_STYLES[getEventStatus(firm)]}
-                        >
-                          <span>{getEventStatus(firm)}</span>
-                          <select
-                            value={getEventStatus(firm)}
-                            onChange={(e) => handleSetFirmStatus(firm.id, e.target.value)}
-                          >
-                            {EVENT_STATUSES.map(s => (
-                              <option key={s} value={s} style={STATUS_OPTION_STYLES[s]}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
+                        <CustomDropdown
+                          variant="badge"
+                          value={getEventStatus(firm)}
+                          options={EVENT_STATUSES}
+                          optionStyles={STATUS_OPTION_STYLES}
+                          onChange={(status) => handleSetFirmStatus(firm.id, status)}
+                        />
                       )}
                     </td>
                     <td>
