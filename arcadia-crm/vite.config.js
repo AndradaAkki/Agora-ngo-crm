@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: '../arcadia-api/public',
+    emptyOutDir: true,
+  },
   optimizeDeps: {
     // This forces Vite to stop trying to be "smart" and just 
     // include the specific entry points that actually work.

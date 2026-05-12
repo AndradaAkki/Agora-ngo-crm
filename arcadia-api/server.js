@@ -1,5 +1,6 @@
 const express = require('express');
 const { createServer } = require('http');
+const path = require('path');
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@as-integrations/express5');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
@@ -50,9 +51,12 @@ async function startServer() {
   await server.start();
 
   // 4. Mount Apollo Server middleware to the /graphql route
+  // TODO (A4): lock down CORS to specific origins once HTTPS + JWT auth is implemented
+  app.use(cors());
+  app.use(express.static(path.join(__dirname, 'public')));
+
   app.use(
     '/graphql',
-    cors(),
     bodyParser.json(),
     expressMiddleware(server, {
       // This injects Prisma into every request so your resolvers can use it
@@ -61,9 +65,9 @@ async function startServer() {
   );
 
   const PORT = 3000;
-  httpServer.listen(PORT, () => {
-    console.log(`Server is now running on http://localhost:${PORT}/graphql`);
-    console.log(`WebSockets listening on ws://localhost:${PORT}/graphql`);
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is now running on http://0.0.0.0:${PORT}/graphql`);
+    console.log(`WebSockets listening on ws://0.0.0.0:${PORT}/graphql`);
   });
 }
 
