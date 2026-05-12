@@ -565,3 +565,176 @@ body {
   cursor: pointer;
   padding: 10px 24px;
 }
+
+/* ─── Mobile Responsive (≤768px) ────────────────────────────────────────────
+   Desktop layout is completely unaffected — these rules only fire on phones.
+   TODO (security): revisit layout assumptions once A4 auth adds a login page.
+───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Hide sidebar — nav is less critical on phone during demos */
+  .sidebar {
+    display: none;
+  }
+
+  /* Main content: full width, compact padding */
+  .main-content {
+    padding: 16px !important;       /* overrides inline style on FirmProfile */
+    height: auto !important;        /* overrides inline height: 100vh */
+    overflow: visible !important;   /* overrides inline overflow: hidden */
+  }
+
+  /* Header: stack title and buttons vertically */
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Stats bar: stack count and filters */
+  .stats-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
+
+  /* Dashboard table: hide middle columns so it fits without zooming */
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2),
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3),
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4) {
+    display: none;
+  }
+
+  /* Tables: horizontal scroll instead of overflow, no forced min-width */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .custom-table {
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* Fix modal stacking context: animate-fade-in leaves transform: translateY(0)
+     permanently via animation-fill-mode: forwards, which creates a new stacking
+     context and breaks position: fixed (modals end up relative to .main-content).
+     On mobile, replace the animation with opacity-only — no transform, no stacking context. */
+  @keyframes fadeInMobile {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fadeInMobile 0.3s ease forwards;
+    transform: none !important;
+  }
+
+  /* Modals: near full-width, centred against viewport (position: fixed works now) */
+  .modal-content {
+    width: 90vw;
+    padding: 20px;
+  }
+
+  /* Contacts card: 2-column card grid instead of single wide table */
+  .profile-card .custom-table,
+  .profile-card .custom-table thead,
+  .profile-card .custom-table tbody,
+  .profile-card .custom-table tr,
+  .profile-card .custom-table th,
+  .profile-card .custom-table td {
+    display: block;
+  }
+
+  .profile-card .custom-table thead {
+    display: none;
+  }
+
+  .profile-card .custom-table tbody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .profile-card .custom-table tr {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .profile-card .custom-table td {
+    padding: 2px 0;
+    font-size: 13px;
+    border: none;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .profile-card .custom-table td:first-child {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Forms: single column */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* FirmProfile grid: stack all 4 cards in one column */
+  .profile-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    flex: none;
+    overflow: visible;
+    padding-bottom: 40px;
+  }
+
+  /* Profile cards: let body expand freely instead of fixed scroll */
+  .profile-card {
+    min-height: 200px;
+  }
+
+  .profile-card-body {
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  /* Profile hero: stack top row */
+  .hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Landing page: scale down, hide decorative hero image */
+  .landing-container {
+    padding: 40px 20px;
+  }
+
+  .landing-image-section {
+    display: none;
+  }
+
+  .landing-content {
+    flex-direction: column;
+  }
+
+  .landing-text-section {
+    max-width: 100%;
+  }
+}
