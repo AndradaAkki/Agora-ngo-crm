@@ -4,6 +4,7 @@ module.exports = {
   collectCoverageFrom: ['graphql/schema.js'],
   coverageThreshold: {
     global: {
+      branches: 60,
       lines: 80,
       functions: 80,
     },
