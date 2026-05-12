@@ -9,6 +9,7 @@
 # Production builds
 **/dist/
 **/build/
+arcadia-api/public/
 
 # Vite Cache
 **/.vite/
