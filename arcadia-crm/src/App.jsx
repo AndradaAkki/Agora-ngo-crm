@@ -17,6 +17,7 @@ function ProtectedRoute({ currentUser, allowedRoles, children }) {
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const handleLogout = () => setCurrentUser(null);
 
   const {
     isOnline,
@@ -62,7 +63,7 @@ function App() {
         } />
         <Route path="/profile" element={
           <ProtectedRoute currentUser={currentUser}>
-            <UserProfile currentUser={currentUser} />
+            <UserProfile currentUser={currentUser} onLogout={handleLogout} />
           </ProtectedRoute>
         } />
       </Routes>

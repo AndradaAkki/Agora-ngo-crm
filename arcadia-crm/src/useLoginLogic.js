@@ -6,7 +6,7 @@ import { useMutation } from '@apollo/client/react';
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
-      id username email displayName role isAdmin
+      id username email displayName avatarUrl role isAdmin
     }
   }
 `;

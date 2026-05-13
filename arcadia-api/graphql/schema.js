@@ -67,6 +67,7 @@ const typeDefs = `#graphql
     username: String!
     email: String!
     displayName: String
+    avatarUrl: String
     role: String
     isAdmin: Boolean!
   }
@@ -101,6 +102,7 @@ const typeDefs = `#graphql
     deleteContract(contractId: ID!): Contract!
     updateContractSteps(contractId: ID!, steps: [String!]!): Contract!
     login(email: String!, password: String!): User
+    updateAvatar(userId: ID!, avatarUrl: String!): User!
   }
 
   type Subscription {
@@ -185,6 +187,13 @@ const resolvers = {
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user || user.password !== password) return null;
       return user;
+    },
+
+    updateAvatar: async (_, { userId, avatarUrl }, { prisma }) => {
+      return await prisma.user.update({
+        where: { id: userId },
+        data: { avatarUrl }
+      });
     },
 
     addFirm: async (_, args, { prisma }) => {
