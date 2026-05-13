@@ -13,7 +13,7 @@ function Login({ onLogin }) {
           <div style={{ width: '48px', height: '48px', background: '#092C4C', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Building2 color="white" size={28} />
           </div>
-          <h1 className="login-title">Arcadia CRM</h1>
+          <h1 className="login-title">Agora CRM</h1>
         </div>
 
         <p className="login-subtitle">Sign in to your account</p>
