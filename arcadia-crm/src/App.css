@@ -566,6 +566,92 @@ body {
   padding: 10px 24px;
 }
 
+/* ─── Login Page ─────────────────────────────────────────────────────────── */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+}
+
+.login-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(9, 44, 76, 0.08);
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark-navy);
+  margin: 0;
+}
+
+.login-subtitle {
+  color: var(--text-light);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-navy);
+}
+
+.login-field input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--font-main);
+  color: var(--dark-navy);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.login-field input:focus {
+  border-color: var(--primary-blue);
+}
+
+.login-error {
+  color: var(--status-rejected-text);
+  font-size: 13px;
+  margin: 0;
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 15px;
+}
+
 /* ─── Mobile Responsive (≤768px) ────────────────────────────────────────────
    Desktop layout is completely unaffected — these rules only fire on phones.
    TODO (security): revisit layout assumptions once A4 auth adds a login page.

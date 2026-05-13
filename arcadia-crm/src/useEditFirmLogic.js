@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
-import { useMutation} from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
+
+const GET_USERS = gql`
+  query GetUsers {
+    getUsers { id displayName role }
+  }
+`;
 
 // 1. Define the GraphQL Mutation to update the database
 export const UPDATE_FIRM = gql`
@@ -21,22 +27,24 @@ export function useEditFirmLogic({ firm, onSave, onClose }) {
     assignedCD: 'nobody'
   });
 
-  // 2. Pre-fill the form with the existing firm data
+  // 2. Fetch all users for the CD dropdown
+  const { data: usersData } = useQuery(GET_USERS);
+  const users = usersData?.getUsers ?? [];
+
+  // 3. Pre-fill the form. assignedCD from getFirms is already a User UUID.
   useEffect(() => {
-    if (firm) {
-      setFormData({
-        name: firm.name || '',
-        status: firm.status || 'In Progress',
-        assignedCD: firm.assignedCD || 'nobody'
-      });
-    }
+    if (!firm) return;
+    setFormData({
+      name: firm.name || '',
+      status: firm.status || 'In Progress',
+      assignedCD: firm.assignedCD ?? 'nobody'
+    });
   }, [firm]);
 
-  // 3. Initialize the Apollo Mutation
+  // 4. Initialize the Apollo Mutation
   const [updateFirm, { loading, error }] = useMutation(UPDATE_FIRM, {
+    refetchQueries: ['GetFirms'],
     onCompleted: (data) => {
-      // Once the database successfully updates, we tell the UI to close the modal
-      // and update the screen with the new data.
       onSave({ ...firm, ...data.updateFirm });
     },
     onError: (err) => {
@@ -64,6 +72,7 @@ export function useEditFirmLogic({ firm, onSave, onClose }) {
     setFormData,
     handleSubmit,
     isSaving: loading,
-    saveError: error
+    saveError: error,
+    users
   };
 }

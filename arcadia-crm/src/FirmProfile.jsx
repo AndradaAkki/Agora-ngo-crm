@@ -5,7 +5,7 @@ import { LayoutDashboard, Home, Calendar, Building2, Bell, Settings, ArrowLeft, 
 import { useFirmProfileLogic } from './useFirmProfileLogic';
 import './App.css';
 
-function FirmProfile({ firms, setFirms }) {
+function FirmProfile({ firms, currentUser }) {
   // Bind UI to the hook
   const {
     firm, navigate,
@@ -29,7 +29,7 @@ function FirmProfile({ firms, setFirms }) {
     events, selectedNewEventId, setSelectedNewEventId,
     handleAddContract, promptDeleteContract, cancelDeleteContract, confirmDeleteContract,
     handleStepToggle
-  } = useFirmProfileLogic({ firms });
+  } = useFirmProfileLogic({ firms, currentUser });
 
   if (!firm) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Company not found. <button onClick={() => navigate('/dashboard')}>Back</button></div>;
@@ -63,7 +63,9 @@ function FirmProfile({ firms, setFirms }) {
           <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
           <LayoutDashboard className="menu-icon" onClick={() => navigate('/dashboard')} title="Dashboard" />
           <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
-          <Building2 className="menu-icon active" title="My Firms" />
+          {currentUser?.role !== 'General CD' && (
+            <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+          )}
           <Bell className="menu-icon" />
           <Settings className="menu-icon" onClick={() => navigate('/profile')} title="Profile Settings" />
         </nav>
@@ -74,7 +76,7 @@ function FirmProfile({ firms, setFirms }) {
         {/* Header */}
         <header className="dashboard-header" style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <button onClick={() => navigate('/dashboard')} style={{ background: 'white', border: '1px solid #EAEEF4', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => navigate(-1)} style={{ background: 'white', border: '1px solid #EAEEF4', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <ArrowLeft size={20} color="#092C4C" />
             </button>
             <h1 style={{ color: '#092C4C', margin: 0 }}>{firm.name}</h1>
@@ -110,7 +112,7 @@ function FirmProfile({ firms, setFirms }) {
 
           <div className="hero-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
             <p style={{ margin: 0, fontWeight: '600' }}>
-              Assigned CD Member: <span style={{ fontWeight: 'normal' }}>{firm.assignedCD || 'Nobody'}</span>
+              Assigned CD Member: <span style={{ fontWeight: 'normal' }}>{firm.assigneeName || 'Nobody'}</span>
             </p>
             <div style={{ display: 'flex', gap: '15px' }}>
               

@@ -26,6 +26,7 @@ const typeDefs = `#graphql
     status: String
     details: String
     assignedCD: String
+    assigneeName: String
     pausedUntil: String
     contracts: [Contract]
     contacts: [Contact]
@@ -80,6 +81,7 @@ const typeDefs = `#graphql
   type Query {
     getFirms(page: Int!, limit: Int!): PaginatedFirms!
     getEvents: [Event!]!
+    getUsers: [User!]!
   }
 
   type Mutation {
@@ -98,6 +100,7 @@ const typeDefs = `#graphql
     addContract(firmId: ID!, eventId: ID!): Contract!
     deleteContract(contractId: ID!): Contract!
     updateContractSteps(contractId: ID!, steps: [String!]!): Contract!
+    login(email: String!, password: String!): User
   }
 
   type Subscription {
@@ -120,7 +123,8 @@ const resolvers = {
             contracts: { include: { event: true } },
             contacts: true,
             tasks: true,
-            firmEventStatuses: { include: { event: true } }
+            firmEventStatuses: { include: { event: true } },
+            assignee: true
           }
         }),
         prisma.firm.count()
@@ -128,6 +132,8 @@ const resolvers = {
 
       const formattedFirms = firms.map(firm => ({
         ...firm,
+        assignedCD: firm.assignee?.id ?? null,
+        assigneeName: firm.assignee?.displayName ?? null,
         contracts: firm.contracts.map(c => ({
           id: c.id,
           status: c.status,
@@ -167,10 +173,20 @@ const resolvers = {
 
     getEvents: async (_, __, { prisma }) => {
       return await prisma.event.findMany({ orderBy: { year: 'desc' } });
+    },
+
+    getUsers: async (_, __, { prisma }) => {
+      return await prisma.user.findMany({ orderBy: { displayName: 'asc' } });
     }
   },
 
   Mutation: {
+    login: async (_, { email, password }, { prisma }) => {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user || user.password !== password) return null;
+      return user;
+    },
+
     addFirm: async (_, args, { prisma }) => {
       const newFirm = await prisma.firm.create({
         data: { 
@@ -187,6 +203,7 @@ const resolvers = {
     updateFirm: async (_, { id, assignedCD, mail, ...rest }, { prisma }) => {
       const data = { ...rest };
       if (assignedCD !== undefined) {
+        // assignedCD is a User UUID; 'nobody' or empty means unassign
         data.assignedCd = (assignedCD && assignedCD !== 'nobody') ? assignedCD : null;
       }
       if (mail !== undefined) {

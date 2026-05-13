@@ -3,7 +3,7 @@ import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, H
 import { useMyFirmsLogic } from './useMyFirmsLogic';
 import './App.css';
 
-function MyFirms({ firms }) {
+function MyFirms({ firms, currentUser }) {
   const {
     navigate,
     myFirmsList,
@@ -11,7 +11,7 @@ function MyFirms({ firms }) {
     currentPage,
     setCurrentPage,
     totalPages
-  } = useMyFirmsLogic({ firms });
+  } = useMyFirmsLogic({ firms, currentUser });
 
   return (
     <div className="dashboard-container">
@@ -26,7 +26,9 @@ function MyFirms({ firms }) {
           <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
           <LayoutDashboard className="menu-icon" onClick={() => navigate('/dashboard')} title="Dashboard" />
           <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
-          <Building2 className="menu-icon active" title="My Firms" />
+          {currentUser?.role !== 'General CD' && (
+            <Building2 className="menu-icon active" title="My Firms" />
+          )}
           <Bell className="menu-icon" />
           <Settings className="menu-icon" />
         </nav>

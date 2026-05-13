@@ -18,6 +18,7 @@ export const GET_FIRMS = gql`
         details
         pausedUntil
         assignedCD
+        assigneeName
         tasks {
           id
           desc

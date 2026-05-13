@@ -7,7 +7,7 @@ import CustomDropdown from './CustomDropdown';
 import { STATUS_OPTION_STYLES, EVENT_STATUSES } from './statusConfig';
 import './App.css';
 
-function Dashboard({ firms, onAddFirm }) {
+function Dashboard({ firms, onAddFirm, currentUser }) {
   const {
     navigate,
     isAddModalOpen,
@@ -38,7 +38,9 @@ function Dashboard({ firms, onAddFirm }) {
           <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
           <LayoutDashboard className="menu-icon active" title="Dashboard" />
           <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
-          <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+          {currentUser?.role !== 'General CD' && (
+            <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+          )}
           <Bell className="menu-icon" />
           <Settings className="menu-icon" onClick={() => navigate('/profile')} title="Profile Settings" />
         </nav>

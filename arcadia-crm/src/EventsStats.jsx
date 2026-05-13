@@ -5,7 +5,7 @@ import { useEventsStatsLogic } from './useEventsStatsLogic';
 import CustomDropdown from './CustomDropdown';
 import './App.css';
 
-function EventsStats() {
+function EventsStats({ currentUser }) {
   // Conectăm UI-ul la Logică
   const {
     navigate, loading, error,
@@ -34,7 +34,9 @@ function EventsStats() {
           <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
           <LayoutDashboard className="menu-icon" onClick={() => navigate('/dashboard')} title="Dashboard" />
           <Calendar className="menu-icon active" title="Events & Stats" />
-          <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+          {currentUser?.role !== 'General CD' && (
+            <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+          )}
           <Bell className="menu-icon" />
           <Settings className="menu-icon" />
         </nav>
@@ -163,7 +165,7 @@ function EventsStats() {
                         {firm.status}
                       </span>
                     </td>
-                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.assignedCD || 'Nobody'}</td>
+                    <td style={{ color: '#526477', fontSize: '14px' }}>{firm.assigneeName || 'Nobody'}</td>
                     <td style={{ color: '#526477', fontSize: '14px' }}>{firm.email}</td>
                   </tr>
                 )) : (

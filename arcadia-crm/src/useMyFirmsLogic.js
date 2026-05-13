@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export function useMyFirmsLogic({ firms }) {
+export function useMyFirmsLogic({ firms, currentUser }) {
   const navigate = useNavigate();
-  
-  // 1. Simulam utilizatorul logat 
-  const currentUser = "Alex Thompson";
 
-  // 2. Filtram lista pentru a arata doar companiile asignate lui
-  const myFirmsList = firms.filter(firm => firm.assignedCD === currentUser);
+  const myFirmsList = firms.filter(firm => firm.assignedCD === currentUser?.id);
 
   const today = new Date();
   const sortedMyFirms = [...myFirmsList].sort((a, b) => {

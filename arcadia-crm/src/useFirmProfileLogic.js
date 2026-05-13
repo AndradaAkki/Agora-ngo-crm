@@ -60,7 +60,7 @@ const UPDATE_CONTRACT_STEPS = gql`
 `;
 
 // Atentie: am scos setFirms din props, nu mai avem nevoie de el!
-export function useFirmProfileLogic({ firms }) {
+export function useFirmProfileLogic({ firms, currentUser }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const firm = firms?.find(f => String(f.id) === String(id));
@@ -165,7 +165,7 @@ export function useFirmProfileLogic({ firms }) {
           firmId: firm.id, 
           type: activityData.type, 
           desc: activityData.desc, 
-          author: 'Alex Thompson', 
+          author: currentUser?.displayName ?? 'Unknown',
           date: activityData.date 
         } 
       });

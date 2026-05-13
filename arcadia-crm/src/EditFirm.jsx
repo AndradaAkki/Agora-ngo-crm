@@ -3,12 +3,13 @@ import { useEditFirmLogic } from './useEditFirmLogic';
 
 function EditFirm({ firm, onSave, onClose, onOpenContacts }) {
   // Bind UI to the hook
-  const { 
-    formData, 
-    setFormData, 
-    handleSubmit, 
-    isSaving, 
-    saveError 
+  const {
+    formData,
+    setFormData,
+    handleSubmit,
+    isSaving,
+    saveError,
+    users
   } = useEditFirmLogic({ firm, onSave, onClose });
 
   return (
@@ -56,17 +57,17 @@ function EditFirm({ firm, onSave, onClose, onOpenContacts }) {
           <div className="form-grid" style={{ marginTop: '20px' }}>
             <div>
               <label htmlFor="edit-cd" style={{ fontSize: '13px', fontWeight: 'bold', color: '#092C4C' }}>Assign to CD Member</label>
-              <select 
-                id="edit-cd" 
-                className="form-input" 
-                value={formData.assignedCD} 
+              <select
+                id="edit-cd"
+                className="form-input"
+                value={formData.assignedCD}
                 onChange={(e) => setFormData({...formData, assignedCD: e.target.value})}
                 disabled={isSaving}
               >
                 <option value="nobody">Nobody</option>
-                <option value="Alex Thompson">Alex Thompson</option>
-                <option value="Sarah Johnson">Sarah Johnson</option>
-                <option value="Mike Davis">Mike Davis</option>
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>{u.displayName} ({u.role})</option>
+                ))}
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
