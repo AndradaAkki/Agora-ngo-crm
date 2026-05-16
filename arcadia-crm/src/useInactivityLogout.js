@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const TIMEOUT_MS = 30 * 1000; // 30 minutes
+const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 const EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
 
 export function useInactivityLogout(currentUser, onLogout) {
