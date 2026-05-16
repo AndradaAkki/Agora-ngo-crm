@@ -1,7 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
+  const pw = await bcrypt.hash('password123', 10);
   console.log('Clearing existing data...');
   await prisma.history.deleteMany();
   await prisma.task.deleteMany();
@@ -17,7 +19,7 @@ async function main() {
     data: {
       email: 'admin@arcadia.com',
       username: 'admin',
-      password: 'password123',
+      password: pw,
       role: 'ADMIN',
       isAdmin: true,
       displayName: 'System Admin',
@@ -28,7 +30,7 @@ async function main() {
     data: {
       email: 'alex.thompson@arcadia.com',
       username: 'alex_thompson',
-      password: 'password123',
+      password: pw,
       role: 'Externe CD',
       isAdmin: false,
       displayName: 'Alex Thompson',
@@ -39,7 +41,7 @@ async function main() {
     data: {
       email: 'sarah.johnson@arcadia.com',
       username: 'sarah_johnson',
-      password: 'password123',
+      password: pw,
       role: 'General CD',
       isAdmin: false,
       displayName: 'Sarah Johnson',

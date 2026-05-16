@@ -6,7 +6,8 @@ import { useMutation } from '@apollo/client/react';
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
-      id username email displayName avatarUrl role isAdmin
+      token
+      user { id username email displayName avatarUrl role isAdmin }
     }
   }
 `;
@@ -28,8 +29,11 @@ export function useLoginLogic({ onLogin }) {
         setError('Invalid email or password.');
         return;
       }
-      onLogin(data.login);
-      navigate(data.login.role === 'Externe CD' ? '/firms' : '/dashboard');
+      const { token, user } = data.login;
+      localStorage.setItem('arcadia_token', token);
+      localStorage.setItem('arcadia_user', JSON.stringify(user));
+      onLogin(user);
+      navigate(user.role === 'Externe CD' ? '/firms' : '/dashboard');
     } catch {
       setError('Login failed. Please try again.');
     }

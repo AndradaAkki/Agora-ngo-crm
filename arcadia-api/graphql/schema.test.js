@@ -5,12 +5,28 @@ jest.mock('graphql-subscriptions', () => ({
   })),
 }));
 
+jest.mock('bcrypt', () => ({
+  compare: jest.fn(),
+  hash: jest.fn(),
+}));
+
+jest.mock('jsonwebtoken', () => ({
+  sign: jest.fn().mockReturnValue('mock-token'),
+  verify: jest.fn(),
+}));
+
 const { resolvers } = require('./schema');
 const prisma = require('./__mocks__/prisma');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 beforeEach(() => jest.clearAllMocks());
 
-const ctx = { prisma };
+// Default context: authenticated as ADMIN so all resolvers are reachable
+const ctx = { prisma, currentUser: { id: 'user-admin', role: 'ADMIN', isAdmin: true } };
+// Unauthenticated context for testing auth guards
+const unauthCtx = { prisma, currentUser: null };
+const generalCdCtx = { prisma, currentUser: { id: 'user-gcd', role: 'General CD', isAdmin: false } };
 
 // ─── getFirms ────────────────────────────────────────────────────────────────
 
@@ -442,5 +458,129 @@ describe('Mutation: setFirmEventStatus', () => {
       null, { firmId: 'firm-1', eventId: 'evt-2', status: 'Pending' }, ctx
     );
     expect(result.eventName).toBeNull();
+  });
+});
+
+// ─── getUsers ─────────────────────────────────────────────────────────────────
+
+describe('Query: getUsers', () => {
+  test('returns users ordered by displayName ascending', async () => {
+    const users = [
+      { id: 'u-1', displayName: 'Alice', role: 'ADMIN' },
+      { id: 'u-2', displayName: 'Bob', role: 'General CD' },
+    ];
+    prisma.user.findMany.mockResolvedValue(users);
+    const result = await resolvers.Query.getUsers(null, {}, ctx);
+    expect(prisma.user.findMany).toHaveBeenCalledWith({ orderBy: { displayName: 'asc' } });
+    expect(result).toEqual(users);
+  });
+});
+
+// ─── login ────────────────────────────────────────────────────────────────────
+
+describe('Mutation: login', () => {
+  test('returns token and user when credentials are correct', async () => {
+    const user = { id: 'u-1', email: 'alice@ngo.org', password: 'hashed', role: 'ADMIN', isAdmin: true };
+    prisma.user.findUnique.mockResolvedValue(user);
+    bcrypt.compare.mockResolvedValue(true);
+    const result = await resolvers.Mutation.login(null, { email: 'alice@ngo.org', password: 'secret' }, { prisma });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { email: 'alice@ngo.org' } });
+    expect(result.token).toBe('mock-token');
+    expect(result.user).toEqual(user);
+  });
+
+  test('returns null when password does not match', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'u-1', email: 'alice@ngo.org', password: 'hashed' });
+    bcrypt.compare.mockResolvedValue(false);
+    const result = await resolvers.Mutation.login(null, { email: 'alice@ngo.org', password: 'wrong' }, { prisma });
+    expect(result).toBeNull();
+  });
+
+  test('returns null when user does not exist', async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+    const result = await resolvers.Mutation.login(null, { email: 'nobody@ngo.org', password: 'any' }, { prisma });
+    expect(result).toBeNull();
+  });
+});
+
+// ─── updateAvatar ─────────────────────────────────────────────────────────────
+
+describe('Mutation: updateAvatar', () => {
+  test('updates avatarUrl and returns the updated user', async () => {
+    const updated = { id: 'u-1', avatarUrl: 'https://cdn.example.com/avatar.png' };
+    prisma.user.update.mockResolvedValue(updated);
+    const result = await resolvers.Mutation.updateAvatar(null, { userId: 'u-1', avatarUrl: 'https://cdn.example.com/avatar.png' }, ctx);
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'u-1' },
+      data: { avatarUrl: 'https://cdn.example.com/avatar.png' },
+    });
+    expect(result).toEqual(updated);
+  });
+});
+
+// ─── createUser / updateUserRole / deleteUser ─────────────────────────────────
+
+describe('Mutation: createUser', () => {
+  test('ADMIN can create a user with hashed password', async () => {
+    const created = { id: 'u-2', username: 'bob', email: 'bob@ngo.org', role: 'Externe CD', isAdmin: false };
+    bcrypt.hash.mockResolvedValue('hashed-pw');
+    prisma.user.create.mockResolvedValue(created);
+    const result = await resolvers.Mutation.createUser(null, { username: 'bob', email: 'bob@ngo.org', password: 'pw', role: 'Externe CD' }, ctx);
+    expect(bcrypt.hash).toHaveBeenCalledWith('pw', 10);
+    expect(prisma.user.create).toHaveBeenCalledWith({
+      data: { username: 'bob', email: 'bob@ngo.org', password: 'hashed-pw', displayName: 'bob', role: 'Externe CD', isAdmin: false },
+    });
+    expect(result).toEqual(created);
+  });
+});
+
+describe('Mutation: updateUserRole', () => {
+  test('ADMIN can change a user role', async () => {
+    const updated = { id: 'u-2', role: 'ADMIN', isAdmin: true };
+    prisma.user.update.mockResolvedValue(updated);
+    const result = await resolvers.Mutation.updateUserRole(null, { userId: 'u-2', role: 'ADMIN' }, ctx);
+    expect(prisma.user.update).toHaveBeenCalledWith({ where: { id: 'u-2' }, data: { role: 'ADMIN', isAdmin: true } });
+    expect(result.isAdmin).toBe(true);
+  });
+});
+
+describe('Mutation: deleteUser', () => {
+  test('ADMIN can delete a user', async () => {
+    const deleted = { id: 'u-2', username: 'bob' };
+    prisma.user.delete.mockResolvedValue(deleted);
+    const result = await resolvers.Mutation.deleteUser(null, { userId: 'u-2' }, ctx);
+    expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: 'u-2' } });
+    expect(result).toEqual(deleted);
+  });
+});
+
+// ─── Role enforcement ─────────────────────────────────────────────────────────
+
+describe('Role enforcement', () => {
+  test('unauthenticated user cannot query getFirms', async () => {
+    await expect(resolvers.Query.getFirms(null, { page: 1, limit: 10 }, unauthCtx))
+      .rejects.toThrow('Not authenticated');
+  });
+
+  test('General CD cannot delete a firm', async () => {
+    await expect(resolvers.Mutation.deleteFirm(null, { id: 'firm-1' }, generalCdCtx))
+      .rejects.toThrow('Not authorized');
+  });
+
+  test('General CD cannot change assigned CD', async () => {
+    prisma.firm.update.mockResolvedValue({ id: 'firm-1' });
+    await expect(resolvers.Mutation.updateFirm(null, { id: 'firm-1', assignedCD: 'user-2' }, generalCdCtx))
+      .rejects.toThrow('Not authorized');
+  });
+
+  test('General CD cannot create users', async () => {
+    await expect(resolvers.Mutation.createUser(null, { username: 'x', email: 'x@x.com', password: 'pw', role: 'Externe CD' }, generalCdCtx))
+      .rejects.toThrow('Not authorized');
+  });
+
+  test('ADMIN can delete a firm', async () => {
+    prisma.firm.delete.mockResolvedValue({ id: 'firm-1', name: 'Corp' });
+    const result = await resolvers.Mutation.deleteFirm(null, { id: 'firm-1' }, ctx);
+    expect(result.id).toBe('firm-1');
   });
 });

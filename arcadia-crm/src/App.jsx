@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Presentation from './Presentation';
 import Login from './Login';
@@ -7,7 +7,9 @@ import MyFirms from './MyFirms';
 import EventsStats from './EventsStats';
 import FirmProfile from './FirmProfile';
 import UserProfile from './UserProfile';
+import UsersAdmin from './UsersAdmin';
 import { useAppLogic } from './useAppLogic';
+import { useInactivityLogout } from './useInactivityLogout';
 
 function ProtectedRoute({ currentUser, allowedRoles, children }) {
   if (!currentUser) return <Navigate to="/login" replace />;
@@ -16,18 +18,24 @@ function ProtectedRoute({ currentUser, allowedRoles, children }) {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const handleLogout = () => setCurrentUser(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('arcadia_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  const {
-    isOnline,
-    firms,
-    hasMore,
-    loadMoreFirms,
-    handleAddFirm,
-    handleUpdateFirm,
-    handleDeleteFirm
-  } = useAppLogic();
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('arcadia_token');
+    localStorage.removeItem('arcadia_user');
+    setCurrentUser(null);
+  }, []);
+
+  useInactivityLogout(currentUser, handleLogout);
+
+  const { isOnline, firms, hasMore, loadMoreFirms, handleAddFirm, handleUpdateFirm, handleDeleteFirm } = useAppLogic();
 
   return (
     <Router>
@@ -64,6 +72,11 @@ function App() {
         <Route path="/profile" element={
           <ProtectedRoute currentUser={currentUser}>
             <UserProfile currentUser={currentUser} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute currentUser={currentUser} allowedRoles={['ADMIN']}>
+            <UsersAdmin currentUser={currentUser} onLogout={handleLogout} />
           </ProtectedRoute>
         } />
       </Routes>

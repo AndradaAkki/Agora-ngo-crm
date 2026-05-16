@@ -12,7 +12,8 @@ const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
 
 // Import your newly created GraphQL Schema
-const { typeDefs, resolvers } = require('./graphql/schema');
+const jwt = require('jsonwebtoken');
+const { typeDefs, resolvers, JWT_SECRET } = require('./graphql/schema');
 
 // Initialize Prisma
 const prisma = new PrismaClient();
@@ -60,7 +61,19 @@ async function startServer() {
     bodyParser.json(),
     expressMiddleware(server, {
       // This injects Prisma into every request so your resolvers can use it
-      context: async () => ({ prisma }), 
+      context: async ({ req }) => {
+        const auth = req.headers.authorization || '';
+        let currentUser = null;
+        if (auth.startsWith('Bearer ')) {
+          try {
+            const payload = jwt.verify(auth.slice(7), JWT_SECRET);
+            currentUser = payload;
+          } catch {
+            // Invalid or expired token — currentUser stays null
+          }
+        }
+        return { prisma, currentUser };
+      },
     })
   );
 
