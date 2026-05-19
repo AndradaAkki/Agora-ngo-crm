@@ -11,6 +11,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     exclude: ['tests/**', 'node_modules/**'],
+    coverage: {
+      include: ['src/**/*login*', 'src/**/*Login*', 'src/**/*auth*', 'src/**/*Auth*'],
+    },
   },
   server: {
     https: certsExist ? {
