@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter } from 'lucide-react';
 import { useMyFirmsLogic } from './useMyFirmsLogic';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 function MyFirms({ firms, currentUser }) {
@@ -43,8 +44,8 @@ function MyFirms({ firms, currentUser }) {
                 <Search size={20} color="#7E92A2" />
               </button>
               <img 
-                src="https://i.pravatar.cc/150?u=andra" 
-                alt="User" 
+                src={currentUser?.avatarUrl || emptyPfp}
+                alt="User"
                 className="avatar" 
                 onClick={() => navigate('/profile')} 
                 style={{ cursor: 'pointer' }} 

@@ -3,6 +3,7 @@ import EditFirm from './EditFirm';
 import ContactManager from './ContactManager';
 import { LayoutDashboard, Home, Calendar, Building2, Bell, Settings, ArrowLeft, ExternalLink, Edit3, Trash2, PauseCircle, CalendarClock, Plus, CheckSquare, Square, Trash } from 'lucide-react';
 import { useFirmProfileLogic } from './useFirmProfileLogic';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 function FirmProfile({ firms, currentUser }) {
@@ -83,7 +84,7 @@ function FirmProfile({ firms, currentUser }) {
           </div>
           <div className="header-icons">
             <button style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} color="#7E92A2" /></button>
-            <img src="https://i.pravatar.cc/150?u=andra" alt="User" className="avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }} />
+            <img src={currentUser?.avatarUrl || emptyPfp} alt="User" className="avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }} />
           </div>
         </header>
 

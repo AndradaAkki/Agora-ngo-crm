@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Search, Edit2, LogOut, ShieldCheck } from 'lucide-react';
 import { useUserProfileLogic } from './useUserProfileLogic';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 function UserProfile({ currentUser, onLogout }) {
@@ -18,7 +19,7 @@ function UserProfile({ currentUser, onLogout }) {
     handleAvatarChange,
   } = useUserProfileLogic({ currentUser, onLogout });
 
-  const avatarUrl = currentUser?.avatarUrl || `https://i.pravatar.cc/150?u=${email}`;
+  const avatarUrl = currentUser?.avatarUrl || emptyPfp;
 
   return (
     <div className="dashboard-container">

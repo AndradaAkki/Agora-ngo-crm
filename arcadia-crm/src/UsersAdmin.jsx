@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Calendar, Home, Settings, Shield, Trash2, Plus, X } from 'lucide-react';
 import { useUsersAdminLogic } from './useUsersAdminLogic';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 const ROLE_COLORS = {
@@ -44,7 +45,7 @@ export default function UsersAdmin({ currentUser, onLogout }) {
           <Settings className="menu-icon" onClick={() => navigate('/profile')} title="Profile" />
         </nav>
         <div className="sidebar-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-          <img src={currentUser?.avatarUrl || `https://i.pravatar.cc/150?u=${currentUser?.email}`} alt="avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+          <img src={currentUser?.avatarUrl || emptyPfp} alt="avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
         </div>
       </aside>
 
@@ -103,7 +104,7 @@ export default function UsersAdmin({ currentUser, onLogout }) {
                   <tr key={user.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src={user.avatarUrl || `https://i.pravatar.cc/150?u=${user.email}`} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={user.avatarUrl || emptyPfp} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, fontSize: '14px' }}>{user.displayName || user.username}</div>
                           <div style={{ color: '#888', fontSize: '12px' }}>@{user.username}</div>

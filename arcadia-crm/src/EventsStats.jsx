@@ -3,6 +3,7 @@ import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Plus, Users
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as BarTooltip } from 'recharts';
 import { useEventsStatsLogic } from './useEventsStatsLogic';
 import CustomDropdown from './CustomDropdown';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 function EventsStats({ currentUser }) {
@@ -64,7 +65,7 @@ function EventsStats({ currentUser }) {
               onChange={setSelectedEvent}
             />
 
-            <img src="https://i.pravatar.cc/150?u=andra" alt="User" className="avatar" />
+            <img src={currentUser?.avatarUrl || emptyPfp} alt="User" className="avatar" />
           </div>
         </header>
 

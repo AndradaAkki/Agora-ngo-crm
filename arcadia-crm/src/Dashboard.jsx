@@ -5,6 +5,7 @@ import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
 import CustomDropdown from './CustomDropdown';
 import { STATUS_OPTION_STYLES, EVENT_STATUSES } from './statusConfig';
+import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
 function Dashboard({ firms, onAddFirm, currentUser }) {
@@ -59,8 +60,8 @@ function Dashboard({ firms, onAddFirm, currentUser }) {
                 <Search size={20} color="#7E92A2" />
               </button>
               <img 
-                src="https://i.pravatar.cc/150?u=andra" 
-                alt="User" 
+                src={currentUser?.avatarUrl || emptyPfp}
+                alt="User"
                 className="avatar" 
                 onClick={() => navigate('/profile')} 
                 style={{ cursor: 'pointer' }} 
