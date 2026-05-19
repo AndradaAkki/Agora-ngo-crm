@@ -48,10 +48,10 @@ describe('Dashboard', () => {
         <Dashboard firms={mockFirms} onAddFirm={vi.fn()} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByTitle('Home'));
+    fireEvent.click(screen.getAllByTitle('Home')[0]);
     expect(mockNavigate).toHaveBeenCalledWith('/');
 
-    fireEvent.click(screen.getByTitle('Events & Stats'));
+    fireEvent.click(screen.getAllByTitle('Events & Stats')[0]);
     expect(mockNavigate).toHaveBeenCalledWith('/stats');
   });
 

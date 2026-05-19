@@ -36,14 +36,14 @@ function App() {
   }, []);
 
   // Handle OAuth redirect: ?token=JWT lands here after Google/GitHub login.
-  // Only runs for JWT tokens (3 dot-separated parts) — never on /reset-password
+  // Only runs for JWT tokens (3 dot-separated parts)  never on /reset-password
   // which uses a plain hex token with a different purpose.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     if (!token || token.split('.').length !== 3) return;
 
-    // Strip JWT from URL bar immediately — never let it linger
+    // Strip JWT from URL bar immediately never let it linger
     window.history.replaceState({}, '', window.location.pathname);
 
     try {
@@ -53,7 +53,7 @@ function App() {
       localStorage.setItem('arcadia_user', JSON.stringify(user));
       setCurrentUser(user);
     } catch {
-      // Malformed token — ignore
+      // Malformed token ignore
     }
   }, []);
 

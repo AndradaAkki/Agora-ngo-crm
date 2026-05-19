@@ -135,4 +135,25 @@ describe('Login', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
+
+  test('Google OAuth link points to /auth/google', () => {
+    useMutation.mockReturnValue([vi.fn(), { loading: false }]);
+    renderLogin();
+    const link = screen.getByRole('link', { name: /sign in with google/i });
+    expect(link.getAttribute('href')).toBe('/auth/google');
+  });
+
+  test('GitHub OAuth link points to /auth/github', () => {
+    useMutation.mockReturnValue([vi.fn(), { loading: false }]);
+    renderLogin();
+    const link = screen.getByRole('link', { name: /sign in with github/i });
+    expect(link.getAttribute('href')).toBe('/auth/github');
+  });
+
+  test('forgot password link points to /forgot-password', () => {
+    useMutation.mockReturnValue([vi.fn(), { loading: false }]);
+    renderLogin();
+    const link = screen.getByRole('link', { name: /forgot your password/i });
+    expect(link.getAttribute('href')).toBe('/forgot-password');
+  });
 });

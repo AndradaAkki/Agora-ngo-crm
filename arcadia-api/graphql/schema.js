@@ -7,7 +7,7 @@ const pubsub = new PubSub();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arcadia-dev-secret';
 
-// ─── Auth helpers ─────────────────────────────────────────────────────────────
+// ─── Auth helpers
 
 function requireAuth(currentUser) {
   if (!currentUser) throw new GraphQLError('Not authenticated', { extensions: { code: 'UNAUTHENTICATED' } });

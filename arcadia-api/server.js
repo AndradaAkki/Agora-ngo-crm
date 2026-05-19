@@ -17,7 +17,7 @@ const tlsOptions = {
   cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem')),
 };
 
-// Import your newly created GraphQL Schema
+
 const jwt = require('jsonwebtoken');
 const { typeDefs, resolvers, JWT_SECRET } = require('./graphql/schema');
 const { router: oauthRouter, passport } = require('./auth/oauth');

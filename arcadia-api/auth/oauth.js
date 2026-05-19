@@ -9,7 +9,7 @@ const { JWT_SECRET } = require('../graphql/schema');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+//  Helper 
 
 async function findOrCreateOAuthUser(provider, providerId, profile) {
   const idField = provider === 'google' ? 'googleId' : 'githubId';
@@ -75,7 +75,7 @@ passport.use(new GitHubStrategy({
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-// ─── JWT redirect helper ───────────────────────────────────────────────────────
+// JWT redirect helper 
 
 function issueJwtAndRedirect(req, res) {
   const user = req.user;
@@ -88,7 +88,7 @@ function issueJwtAndRedirect(req, res) {
   res.redirect(`https://${req.get('host')}/?token=${token}`);
 }
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
+//  Routes 
 
 router.get('/google',
   passport.authenticate('google', { session: false, scope: ['profile', 'email'] })
