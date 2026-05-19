@@ -862,6 +862,11 @@ body {
     gap: 10px;
   }
 
+  /* Bottom nav bar */
+  .main-content {
+    padding-bottom: 76px !important;
+  }
+
   /* Landing page: scale down, hide decorative hero image */
   .landing-container {
     padding: 40px 20px;
@@ -877,5 +882,49 @@ body {
 
   .landing-text-section {
     max-width: 100%;
+  }
+}
+
+/* ─── Mobile Bottom Nav ──────────────────────────────────────────────────── */
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    z-index: 200;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+  }
+
+  .mobile-nav-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: color 0.2s;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--primary-blue);
+  }
+
+  .mobile-nav-item:hover {
+    color: var(--primary-blue);
   }
 }

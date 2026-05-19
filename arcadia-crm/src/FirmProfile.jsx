@@ -1,5 +1,6 @@
 import React from 'react';
 import EditFirm from './EditFirm';
+import MobileNav from './MobileNav';
 import ContactManager from './ContactManager';
 import { LayoutDashboard, Home, Calendar, Building2, Bell, Settings, ArrowLeft, ExternalLink, Edit3, Trash2, PauseCircle, CalendarClock, Plus, CheckSquare, Square, Trash } from 'lucide-react';
 import { useFirmProfileLogic } from './useFirmProfileLogic';
@@ -488,6 +489,7 @@ function FirmProfile({ firms, currentUser }) {
         )}
 
       </main>
+      <MobileNav currentUser={currentUser} />
     </div>
   );
 }

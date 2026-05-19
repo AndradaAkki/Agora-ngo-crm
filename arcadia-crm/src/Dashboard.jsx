@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, Filter, Plus } from 'lucide-react';
 import { useDashboardLogic } from './useDashboardLogic';
 import AddFirm from './AddFirm';
+import MobileNav from './MobileNav';
 import CustomDropdown from './CustomDropdown';
 import { STATUS_OPTION_STYLES, EVENT_STATUSES } from './statusConfig';
 import emptyPfp from './assets/empty_pfp.jpeg';
@@ -151,14 +152,15 @@ function Dashboard({ firms, onAddFirm, currentUser }) {
       </main>
 
       {isAddModalOpen && (
-        <AddFirm 
+        <AddFirm
           onAddFirm={(newFirm) => {
             handleAddFirm(newFirm);
             setIsAddModalOpen(false);
-          }} 
-          onClose={() => setIsAddModalOpen(false)} 
+          }}
+          onClose={() => setIsAddModalOpen(false)}
         />
       )}
+      <MobileNav currentUser={currentUser} />
     </div>
   );
 }

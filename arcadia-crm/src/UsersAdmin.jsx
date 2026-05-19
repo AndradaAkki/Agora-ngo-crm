@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Calendar, Home, Settings, Shield, Trash2, Plus, X } from 'lucide-react';
 import { useUsersAdminLogic } from './useUsersAdminLogic';
+import MobileNav from './MobileNav';
 import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
@@ -134,6 +135,8 @@ export default function UsersAdmin({ currentUser, onLogout }) {
           )}
         </div>
       </main>
+
+      <MobileNav currentUser={currentUser} />
 
       {/* Delete confirmation modal */}
       {deleteTarget && (

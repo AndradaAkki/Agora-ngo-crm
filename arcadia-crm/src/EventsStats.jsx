@@ -2,6 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Plus, Users, Copy, Activity, Table as TableIcon, PieChart as ChartIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as BarTooltip } from 'recharts';
 import { useEventsStatsLogic } from './useEventsStatsLogic';
+import MobileNav from './MobileNav';
 import CustomDropdown from './CustomDropdown';
 import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
@@ -278,6 +279,7 @@ function EventsStats({ currentUser }) {
         )}
 
       </main>
+      <MobileNav currentUser={currentUser} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Search, Bell, Settings, Calendar, LogOut, Home, Mail, ChevronDown, Filter } from 'lucide-react';
 import { useMyFirmsLogic } from './useMyFirmsLogic';
+import MobileNav from './MobileNav';
 import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
@@ -118,6 +119,7 @@ function MyFirms({ firms, currentUser }) {
           <button className="pag-arrow" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>&gt;</button>
         </div>
       </main>
+      <MobileNav currentUser={currentUser} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Search, Edit2, LogOut, ShieldCheck } from 'lucide-react';
 import { useUserProfileLogic } from './useUserProfileLogic';
+import MobileNav from './MobileNav';
 import emptyPfp from './assets/empty_pfp.jpeg';
 import './App.css';
 
@@ -177,6 +178,7 @@ function UserProfile({ currentUser, onLogout }) {
         )}
 
       </main>
+      <MobileNav currentUser={currentUser} />
     </div>
   );
 }
