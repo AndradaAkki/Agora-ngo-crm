@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Search, Edit2, LogOut } from 'lucide-react';
+import { LayoutDashboard, Building2, Bell, Settings, Calendar, Home, Search, Edit2, LogOut, ShieldCheck } from 'lucide-react';
 import { useUserProfileLogic } from './useUserProfileLogic';
 import './App.css';
 
@@ -129,8 +129,16 @@ function UserProfile({ currentUser, onLogout }) {
                 </div>
               </div>
 
-              {/* Logout Button */}
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: '40px', paddingTop: '30px', borderTop: '1px solid #EAEEF4' }}>
+              {/* Footer Actions */}
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', marginTop: '40px', paddingTop: '30px', borderTop: '1px solid #EAEEF4' }}>
+                {currentUser?.role === 'ADMIN' && (
+                  <button
+                    onClick={() => navigate('/admin')}
+                    style={{ background: '#EEF0FD', color: '#514EF3', border: 'none', padding: '12px 28px', borderRadius: '70px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
+                    <ShieldCheck size={16} /> Admin Panel
+                  </button>
+                )}
                 <button
                   onClick={() => setIsLogoutModalOpen(true)}
                   style={{ background: '#FBEAEA', color: '#FE8084', border: 'none', padding: '12px 28px', borderRadius: '70px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
