@@ -116,6 +116,8 @@ const typeDefs = `#graphql
 
   type Mutation {
     login(email: String!, password: String!): AuthPayload
+    forgotPassword(email: String!): Boolean!
+    resetPassword(token: String!, newPassword: String!): Boolean!
     createUser(username: String!, email: String!, password: String!, displayName: String, role: String!): User!
     updateUserRole(userId: ID!, role: String!): User!
     deleteUser(userId: ID!): User!
@@ -229,7 +231,7 @@ const resolvers = {
     // ── Auth ──────────────────────────────────────────────────────────────────
     login: async (_, { email, password }, { prisma }) => {
       const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) return null;
+      if (!user || !user.password) return null; // null password = OAuth-only account
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) return null;
       const token = jwt.sign(
@@ -238,6 +240,65 @@ const resolvers = {
         { expiresIn: '7d' }
       );
       return { token, user };
+    },
+
+    forgotPassword: async (_, { email }, { prisma, host }) => {
+      const crypto = require('crypto');
+      const nodemailer = require('nodemailer');
+      const user = await prisma.user.findUnique({ where: { email } });
+      // Always return true — never reveal whether an email is registered
+      if (!user) return true;
+
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { resetToken, resetTokenExpiry },
+      });
+
+      const resetLink = `https://${host}/reset-password?token=${resetToken}`;
+
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"Arcadia CRM" <${process.env.GMAIL_USER}>`,
+        to: email,
+        subject: 'Arcadia CRM — Password Reset',
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:auto">
+            <h2 style="color:#092C4C">Reset your password</h2>
+            <p>Click the button below to set a new password. This link expires in <strong>1 hour</strong>.</p>
+            <a href="${resetLink}" style="display:inline-block;margin:20px 0;padding:12px 24px;background:#092C4C;color:white;text-decoration:none;border-radius:8px;font-weight:bold">
+              Reset password
+            </a>
+            <p style="color:#7E92A2;font-size:13px">If you didn't request this, ignore this email — your password won't change.</p>
+          </div>
+        `,
+      });
+
+      return true;
+    },
+
+    resetPassword: async (_, { token, newPassword }, { prisma }) => {
+      const crypto = require('crypto');
+      const user = await prisma.user.findFirst({
+        where: { resetToken: token, resetTokenExpiry: { gt: new Date() } },
+      });
+      if (!user) throw new GraphQLError('Invalid or expired reset token', { extensions: { code: 'BAD_USER_INPUT' } });
+
+      const hashed = await bcrypt.hash(newPassword, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashed, resetToken: null, resetTokenExpiry: null },
+      });
+      return true;
     },
 
     // ── User management (ADMIN only) ──────────────────────────────────────────

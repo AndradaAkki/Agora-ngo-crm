@@ -1,19 +1,31 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'fs'
+import path from 'path'
+
+const certDir = path.resolve(__dirname, '../arcadia-api/certs')
+const certsExist = fs.existsSync(path.join(certDir, 'key.pem'))
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    exclude: ['tests/**', 'node_modules/**'],
+  },
+  server: {
+    https: certsExist ? {
+      key: fs.readFileSync(path.join(certDir, 'key.pem')),
+      cert: fs.readFileSync(path.join(certDir, 'cert.pem')),
+    } : undefined,
+  },
   build: {
     outDir: '../arcadia-api/public',
     emptyOutDir: true,
   },
   optimizeDeps: {
-    // This forces Vite to stop trying to be "smart" and just 
-    // include the specific entry points that actually work.
     include: ['@apollo/client']
   },
   resolve: {
-    // This ensures Vite looks for the ESM version of the code first
     mainFields: ['module', 'main']
   }
 })

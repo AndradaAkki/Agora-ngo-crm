@@ -8,18 +8,26 @@ datasource db {
 }
 
 model User {
-  id          String  @id @default(uuid())
+  id          String    @id @default(uuid())
   role        String
-  email       String  @unique
-  username    String  @unique
-  password    String
+  email       String    @unique
+  username    String    @unique
+  password    String?
   displayName String?
   avatarUrl   String?
-  isAdmin     Boolean @default(false)
+  isAdmin     Boolean   @default(false)
+
+  // OAuth provider IDs — null for local-only accounts
+  googleId    String?   @unique
+  githubId    String?   @unique
+
+  // Password recovery — null when no active reset request
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
 
   // Relations
   firms       Firm[]    @relation("UserToFirm")
-  history     History[] // Added: Reverse relation to History
+  history     History[]
 }
 
 model Firm {

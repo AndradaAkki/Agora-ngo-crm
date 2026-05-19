@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Presentation from './Presentation';
 import Login from './Login';
@@ -8,6 +8,8 @@ import EventsStats from './EventsStats';
 import FirmProfile from './FirmProfile';
 import UserProfile from './UserProfile';
 import UsersAdmin from './UsersAdmin';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
 import { useAppLogic } from './useAppLogic';
 import { useInactivityLogout } from './useInactivityLogout';
 
@@ -31,6 +33,28 @@ function App() {
     localStorage.removeItem('arcadia_token');
     localStorage.removeItem('arcadia_user');
     setCurrentUser(null);
+  }, []);
+
+  // Handle OAuth redirect: ?token=JWT lands here after Google/GitHub login.
+  // Only runs for JWT tokens (3 dot-separated parts) — never on /reset-password
+  // which uses a plain hex token with a different purpose.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (!token || token.split('.').length !== 3) return;
+
+    // Strip JWT from URL bar immediately — never let it linger
+    window.history.replaceState({}, '', window.location.pathname);
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const user = { id: payload.id, email: payload.email, role: payload.role, isAdmin: payload.isAdmin };
+      localStorage.setItem('arcadia_token', token);
+      localStorage.setItem('arcadia_user', JSON.stringify(user));
+      setCurrentUser(user);
+    } catch {
+      // Malformed token — ignore
+    }
   }, []);
 
   useInactivityLogout(currentUser, handleLogout);
@@ -79,6 +103,8 @@ function App() {
             <UsersAdmin currentUser={currentUser} onLogout={handleLogout} />
           </ProtectedRoute>
         } />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

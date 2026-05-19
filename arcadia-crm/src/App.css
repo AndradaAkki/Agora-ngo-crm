@@ -652,6 +652,61 @@ body {
   font-size: 15px;
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  color: #7E92A2;
+  font-size: 13px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.login-oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-oauth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-oauth:hover { opacity: 0.85; }
+
+.btn-google {
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+}
+.btn-github {
+  background: #24292e;
+  color: #fff;
+  border: none;
+}
+
+.login-forgot {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.login-forgot a { color: #526477; text-decoration: none; }
+.login-forgot a:hover { text-decoration: underline; }
+
 /* ─── Mobile Responsive (≤768px) ────────────────────────────────────────────
    Desktop layout is completely unaffected — these rules only fire on phones.
    TODO (security): revisit layout assumptions once A4 auth adds a login page.
