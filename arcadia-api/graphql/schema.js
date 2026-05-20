@@ -24,7 +24,7 @@ function requireRole(currentUser, ...roles) {
 const EXTERNE_OR_ADMIN = ['Externe CD', 'ADMIN'];
 const ALL_ROLES        = ['Externe CD', 'General CD', 'ADMIN'];
 
-// ─── GraphQL Schema ───────────────────────────────────────────────────────────
+//  GraphQL Schema 
 
 const typeDefs = `#graphql
   type FirmEventStatus {

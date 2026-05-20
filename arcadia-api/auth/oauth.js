@@ -49,7 +49,7 @@ async function findOrCreateOAuthUser(provider, providerId, profile) {
   });
 }
 
-// ─── Strategies ───────────────────────────────────────────────────────────────
+//  Strategies 
 
 passport.use(new GoogleStrategy({
   clientID:     process.env.GOOGLE_CLIENT_ID,
