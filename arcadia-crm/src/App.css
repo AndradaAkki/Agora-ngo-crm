@@ -277,13 +277,13 @@ body {
 }
 
 @keyframes float {
-  0%, 100% { transform: rotate(8deg) translateY(-10px); }
-  50%       { transform: rotate(8deg) translateY(-22px); }
+  0%, 100% { transform: translateY(-10px); }
+  50%       { transform: translateY(2px); }
 }
 
 @keyframes floatAlt {
-  0%, 100% { transform: rotate(8deg) translateY(6px); }
-  50%       { transform: rotate(8deg) translateY(-6px); }
+  0%, 100% { transform: translateY(6px); }
+  50%       { transform: translateY(-6px); }
 }
 
 @keyframes shimmer {
@@ -481,7 +481,7 @@ body {
   width: 100%;
   flex: 1;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .landing-text-section {
@@ -582,6 +582,21 @@ body {
   background: #514EF3;
   border-color: #514EF3;
   box-shadow: 0 4px 16px var(--primary-glow);
+}
+
+/* White semicircle — expands on CTA hover */
+.landing-semicircle {
+  position: absolute;
+  inset: 0;
+  background: #F6FAFD;
+  clip-path: circle(58vw at -10% 50%);
+  transition: clip-path 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.landing-semicircle.is-expanding {
+  clip-path: circle(160vmax at 0% 50%);
 }
 
 /* --- Modal Overlay --- */
