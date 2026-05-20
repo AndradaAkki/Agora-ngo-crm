@@ -13,6 +13,72 @@ function Presentation() {
       {/* White semicircle — expands on CTA hover */}
       <div className={`landing-semicircle${expanding ? ' is-expanding' : ''}`} />
 
+      {/* Glowing line chart — full page, sits behind semicircle so white sweeps over it */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <svg width="100%" height="100%" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" fill="none">
+          <defs>
+            <filter id="sharpGlow" x="-5%" y="-60%" width="110%" height="220%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* X-axis */}
+          <line x1="0" y1="700" x2="1400" y2="700" stroke="rgba(165,163,255,0.2)" strokeWidth="1" />
+          {[0, 200, 400, 600, 800, 1000, 1200, 1400].map((x, i) => (
+            <line key={i} x1={x} y1="696" x2={x} y2="706" stroke="rgba(165,163,255,0.14)" strokeWidth="1" />
+          ))}
+
+          {/* Dim background line */}
+          <path
+            d="M 0 640 C 112 640, 168 592, 280 592 C 392 592, 448 482, 560 482 C 656 482, 704 552, 800 552 C 900 552, 950 402, 1050 402 C 1142 402, 1188 458, 1280 458 C 1328 458, 1352 422, 1400 422"
+            stroke="rgba(165,163,255,0.22)"
+            strokeWidth="1"
+          />
+
+          {/* Magenta-purple line */}
+          <path
+            d="M 0 610 C 112 610, 168 462, 280 462 C 392 462, 448 562, 560 562 C 656 562, 704 352, 800 352 C 900 352, 950 462, 1050 462 C 1142 462, 1188 262, 1280 262 C 1328 262, 1352 282, 1400 282"
+            stroke="#c084fc"
+            strokeWidth="1"
+            filter="url(#sharpGlow)"
+            opacity="0.75"
+          />
+
+          {/* Primary lavender line */}
+          <path
+            d="M 0 580 C 112 580, 168 522, 280 522 C 392 522, 448 322, 560 322 C 656 322, 704 422, 800 422 C 900 422, 950 222, 1050 222 C 1142 222, 1188 312, 1280 312 C 1328 312, 1352 262, 1400 262"
+            stroke="#a5a3ff"
+            strokeWidth="1.5"
+            filter="url(#sharpGlow)"
+          />
+
+          {/* Dashed drop lines at nodes */}
+          {[[280, 522], [560, 322], [800, 422], [1050, 222], [1280, 312]].map(([x, y], i) => (
+            <line key={i} x1={x} y1={y + 6} x2={x} y2="698"
+              stroke="rgba(165,163,255,0.1)" strokeWidth="1" strokeDasharray="4 5" />
+          ))}
+
+          {/* Small sharp dots at nodes */}
+          {[[280, 522], [560, 322], [800, 422], [1050, 222], [1280, 312]].map(([x, y], i) => (
+            <g key={i} filter="url(#dotGlow)">
+              <circle cx={x} cy={y} r="3" fill="rgba(165,163,255,0.5)" />
+              <circle cx={x} cy={y} r="1.5" fill="white" />
+            </g>
+          ))}
+        </svg>
+      </div>
+
       {/* Navbar */}
       <nav className="landing-nav">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -73,6 +139,7 @@ function Presentation() {
             ))}
           </div>
         </div>
+
 
       </div>
     </div>
