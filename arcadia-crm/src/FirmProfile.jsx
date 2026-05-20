@@ -62,14 +62,14 @@ function FirmProfile({ firms, currentUser }) {
            </div>
         </div>
         <nav className="sidebar-menu">
-          <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
-          <LayoutDashboard className="menu-icon" onClick={() => navigate('/dashboard')} title="Dashboard" />
-          <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
+          <div className="menu-icon-wrap" onClick={() => navigate('/')} title="Home"><Home className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/dashboard')} title="Dashboard"><LayoutDashboard className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/stats')} title="Events & Stats"><Calendar className="menu-icon" /></div>
           {currentUser?.role !== 'General CD' && (
-            <Building2 className="menu-icon" onClick={() => navigate('/firms')} title="My Firms" />
+            <div className="menu-icon-wrap" onClick={() => navigate('/firms')} title="My Firms"><Building2 className="menu-icon" /></div>
           )}
-          <Bell className="menu-icon" />
-          <Settings className="menu-icon" onClick={() => navigate('/profile')} title="Profile Settings" />
+          <div className="menu-icon-wrap" title="Notifications"><Bell className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/profile')} title="Profile Settings"><Settings className="menu-icon" /></div>
         </nav>
       </aside>
 
@@ -286,22 +286,20 @@ function FirmProfile({ firms, currentUser }) {
               </button>
             </div>
             <div className="profile-card-body">
-              {profileHistory.map((hist, i) => {
-                const isOld = new Date(hist.timestamp).getFullYear() < currentYear;
+              <div className="history-timeline">
+                {profileHistory.map((hist, i) => {
+                  const isOld = new Date(hist.timestamp).getFullYear() < currentYear;
 
-                return (
-                  <div key={i} style={{ display: 'flex', marginBottom: '20px', gap: '15px', opacity: isOld ? 0.6 : 1, transition: 'opacity 0.2s', position: 'relative' }}>
-                    <div style={{ width: '8px', height: '8px', background: isOld ? '#7E92A2' : '#514EF3', borderRadius: '50%', marginTop: '5px' }}></div>
-                    <div style={{ flex: 1 }}>
+                  return (
+                    <div key={i} className={`history-entry${isOld ? ' old' : ''}`} style={{ opacity: isOld ? 0.6 : 1, transition: 'opacity 0.2s' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <strong style={{ color: isOld ? '#7E92A2' : '#092C4C' }}>{hist.type}</strong>
                           <span style={{ fontSize: '12px', color: '#7E92A2', fontWeight: isOld ? 'normal' : 'bold', marginLeft: '10px' }}>{hist.timestamp ? new Date(hist.timestamp).toLocaleDateString() : ''}</span>
                         </div>
-                        
-                        <button 
-                          onClick={() => promptDeleteHistory(hist)} 
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084', opacity: 0.4 }} 
+                        <button
+                          onClick={() => promptDeleteHistory(hist)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FE8084', opacity: 0.4 }}
                           title="Delete Log"
                         >
                           <Trash size={14} />
@@ -310,12 +308,12 @@ function FirmProfile({ firms, currentUser }) {
                       <p style={{ margin: '5px 0', fontSize: '14px', color: '#526477' }}>{hist.details}</p>
                       {hist.author && <p style={{ margin: 0, fontSize: '12px', color: '#7E92A2' }}>by {hist.author}</p>}
                     </div>
-                  </div>
-                )
-              })}
-              {profileHistory.length === 0 && (
-                <p style={{ color: '#7E92A2' }}>No past history recorded.</p>
-              )}
+                  );
+                })}
+                {profileHistory.length === 0 && (
+                  <p style={{ color: '#7E92A2' }}>No past history recorded.</p>
+                )}
+              </div>
             </div>
           </div>
 
