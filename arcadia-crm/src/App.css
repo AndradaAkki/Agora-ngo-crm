@@ -170,7 +170,6 @@ body {
 }
 
 .table-row:hover {
-  transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 

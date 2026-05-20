@@ -25,14 +25,14 @@ function MyFirms({ firms, currentUser }) {
            </div>
         </div>
         <nav className="sidebar-menu">
-          <Home className="menu-icon" onClick={() => navigate('/')} title="Home" />
-          <LayoutDashboard className="menu-icon" onClick={() => navigate('/dashboard')} title="Dashboard" />
-          <Calendar className="menu-icon" onClick={() => navigate('/stats')} title="Events & Stats" />
+          <div className="menu-icon-wrap" onClick={() => navigate('/')} title="Home"><Home className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/dashboard')} title="Dashboard"><LayoutDashboard className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/stats')} title="Events & Stats"><Calendar className="menu-icon" /></div>
           {currentUser?.role !== 'General CD' && (
-            <Building2 className="menu-icon active" title="My Firms" />
+            <div className="menu-icon-wrap active" title="My Firms"><Building2 className="menu-icon" /></div>
           )}
-          <Bell className="menu-icon" />
-          <Settings className="menu-icon" />
+          <div className="menu-icon-wrap" title="Notifications"><Bell className="menu-icon" /></div>
+          <div className="menu-icon-wrap" onClick={() => navigate('/profile')} title="Profile Settings"><Settings className="menu-icon" /></div>
         </nav>
       </aside>
 
