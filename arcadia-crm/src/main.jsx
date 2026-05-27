@@ -11,6 +11,13 @@ const host = window.location.hostname;
 const PROTOCOL = window.location.protocol === 'https:' ? 'https' : 'http';
 const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss' : 'ws';
 
+// VITE_API_URL is set at build time for cloud deploys (e.g. https://your-app.onrender.com).
+// Falls back to localhost:3000 for local dev.
+const API_BASE = import.meta.env.VITE_API_URL || `${PROTOCOL}://${host}:3000`;
+const WS_BASE  = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/^https/, 'wss').replace(/^http/, 'ws')
+  : `${WS_PROTOCOL}://${host}:3000`;
+
 // 1. Auth link — injects Bearer token into every HTTP request
 const authLink = new ApolloLink((operation, forward) => {
   const token = localStorage.getItem('arcadia_token');
@@ -21,11 +28,11 @@ const authLink = new ApolloLink((operation, forward) => {
 });
 
 // 2. HTTP link
-const httpLink = new HttpLink({ uri: `${PROTOCOL}://${host}:3000/graphql` });
+const httpLink = new HttpLink({ uri: `${API_BASE}/graphql` });
 
 // 3. WebSocket link — token passed in connectionParams
 const wsLink = new GraphQLWsLink(createClient({
-  url: `${WS_PROTOCOL}://${host}:3000/graphql`,
+  url: `${WS_BASE}/graphql`,
   connectionParams: () => {
     const token = localStorage.getItem('arcadia_token');
     return token ? { Authorization: `Bearer ${token}` } : {};

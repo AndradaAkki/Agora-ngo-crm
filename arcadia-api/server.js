@@ -1,5 +1,4 @@
 const express = require('express');
-const { createServer } = require('https');
 const fs = require('fs');
 const path = require('path');
 const { ApolloServer } = require('@apollo/server');
@@ -11,38 +10,52 @@ const { useServer } = require('graphql-ws/use/ws');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
-
-const tlsOptions = {
-  key: fs.readFileSync(path.join(__dirname, 'certs', 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem')),
-};
-
-
 const jwt = require('jsonwebtoken');
 const { typeDefs, resolvers, JWT_SECRET } = require('./graphql/schema');
-const { router: oauthRouter, passport } = require('./auth/oauth');
 
-// Initialize Prisma
+// HTTPS only when USE_HTTPS=true (local dev with self-signed certs).
+// On Render / any cloud host, TLS is terminated by the platform — run plain HTTP.
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
+let createServer;
+let serverOptions;
+if (USE_HTTPS) {
+  createServer = require('https').createServer;
+  serverOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'certs', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'certs', 'cert.pem')),
+  };
+} else {
+  createServer = require('http').createServer;
+  serverOptions = {};
+}
+
+// OAuth is optional — only loaded when ENABLE_OAUTH=true
+let oauthRouter = null;
+let passportMiddleware = (req, res, next) => next();
+if (process.env.ENABLE_OAUTH === 'true') {
+  const oauthModule = require('./auth/oauth');
+  oauthRouter = oauthModule.router;
+  passportMiddleware = oauthModule.passport.initialize();
+}
+
 const prisma = new PrismaClient();
-
 const app = express();
-const httpsServer = createServer(tlsOptions, app);
+const httpServer = USE_HTTPS
+  ? createServer(serverOptions, app)
+  : createServer(app);
 
-// 1. Create the Executable Schema
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-// 2. Set up WebSocket server for Subscriptions
 const wsServer = new WebSocketServer({
-  server: httpsServer,
+  server: httpServer,
   path: '/graphql',
 });
 const serverCleanup = useServer({ schema }, wsServer);
 
-// 3. Set up Apollo Server
 const server = new ApolloServer({
   schema,
   plugins: [
-    ApolloServerPluginDrainHttpServer({ httpServer: httpsServer }),
+    ApolloServerPluginDrainHttpServer({ httpServer }),
     {
       async serverWillStart() {
         return {
@@ -58,18 +71,23 @@ const server = new ApolloServer({
 async function startServer() {
   await server.start();
 
-  // 4. Mount Apollo Server middleware to the /graphql route
-  // Allow localhost dev origins and all RFC 1918 private LAN ranges (10.x, 172.16-31.x, 192.168.x)
-  const privateNetwork = /^https:\/\/(10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$/;
-  app.use(cors({
-    origin: ['https://localhost:5173', 'https://localhost:3000', privateNetwork],
-    credentials: true,
-  }));
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.use(passport.initialize());
-  app.use('/auth', oauthRouter);
+  const privateNetwork = /^https?:\/\/(10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$/;
+  const allowedOrigins = [
+    'https://localhost:5173',
+    'https://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    privateNetwork,
+  ];
+  if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').forEach(o => allowedOrigins.push(o.trim()));
+  }
 
-  // SPA fallback: any non-API route serves index.html so React Router handles it
+  app.use(cors({ origin: allowedOrigins, credentials: true }));
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(passportMiddleware);
+  if (oauthRouter) app.use('/auth', oauthRouter);
+
   app.get(/^(?!\/graphql).*$/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
@@ -78,7 +96,6 @@ async function startServer() {
     '/graphql',
     bodyParser.json(),
     expressMiddleware(server, {
-      // This injects Prisma into every request so your resolvers can use it
       context: async ({ req }) => {
         const auth = req.headers.authorization || '';
         let currentUser = null;
@@ -87,7 +104,7 @@ async function startServer() {
             const payload = jwt.verify(auth.slice(7), JWT_SECRET);
             currentUser = payload;
           } catch {
-            // Invalid or expired token — currentUser stays null
+            // invalid or expired token
           }
         }
         return { prisma, currentUser, host: req.get('host') };
@@ -95,10 +112,10 @@ async function startServer() {
     })
   );
 
-  const PORT = 3000;
-  httpsServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is now running on https://0.0.0.0:${PORT}/graphql`);
-    console.log(`WebSockets listening on wss://0.0.0.0:${PORT}/graphql`);
+  const PORT = process.env.PORT || 3000;
+  const protocol = USE_HTTPS ? 'https' : 'http';
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on ${protocol}://0.0.0.0:${PORT}/graphql`);
   });
 }
 
