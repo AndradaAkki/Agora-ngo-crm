@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gql } from '@apollo/client';
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useApolloClient } from '@apollo/client/react';
 
 const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
@@ -17,6 +17,7 @@ const DEMO_PASSWORD = 'demo123';
 
 export function useLoginLogic({ onLogin }) {
   const navigate = useNavigate();
+  const client = useApolloClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,6 +31,7 @@ export function useLoginLogic({ onLogin }) {
     localStorage.setItem('arcadia_token', token);
     localStorage.setItem('arcadia_user', JSON.stringify(user));
     onLogin(user);
+    await client.resetStore();
     return user;
   };
 
