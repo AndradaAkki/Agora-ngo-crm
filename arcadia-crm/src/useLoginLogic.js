@@ -12,8 +12,8 @@ const LOGIN = gql`
   }
 `;
 
-const DEMO_EMAIL = 'demo@arcadia.crm';
-const DEMO_PASSWORD = 'demo123';
+const DEMO_EMAIL = 'admin@arcadia.com';
+const DEMO_PASSWORD = 'password123';
 
 export function useLoginLogic({ onLogin }) {
   const navigate = useNavigate();
