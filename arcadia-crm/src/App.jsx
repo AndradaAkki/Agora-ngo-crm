@@ -59,6 +59,14 @@ function App() {
 
   useInactivityLogout(currentUser, handleLogout);
 
+  useEffect(() => {
+    if (currentUser?.email === 'demo@arcadia.crm') {
+      document.body.classList.add('demo-mode');
+    } else {
+      document.body.classList.remove('demo-mode');
+    }
+  }, [currentUser]);
+
   const { isOnline, firms, hasMore, loadMoreFirms, handleAddFirm, handleUpdateFirm, handleDeleteFirm } = useAppLogic();
 
   return (
@@ -66,6 +74,11 @@ function App() {
       {!isOnline && (
         <div style={{ background: '#FE8084', color: 'white', textAlign: 'center', padding: '5px', fontSize: '12px', position: 'fixed', top: 0, width: '100%', zIndex: 9999 }}>
           You are currently offline. Working from local cache.
+        </div>
+      )}
+      {currentUser?.email === 'demo@arcadia.crm' && (
+        <div className="demo-banner">
+          Demo mode — browsing is enabled, modifications are disabled.
         </div>
       )}
       <Routes>

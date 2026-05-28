@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const pubsub = new PubSub();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arcadia-dev-secret';
+const DEMO_EMAIL = 'demo@arcadia.crm';
 
 // ─── Auth helpers
 
@@ -17,6 +18,12 @@ function requireRole(currentUser, ...roles) {
   requireAuth(currentUser);
   if (!roles.includes(currentUser.role)) {
     throw new GraphQLError('Not authorized', { extensions: { code: 'FORBIDDEN' } });
+  }
+}
+
+function requireNotDemo(currentUser) {
+  if (currentUser?.email === DEMO_EMAIL) {
+    throw new GraphQLError('Demo account is read-only', { extensions: { code: 'FORBIDDEN' } });
   }
 }
 
@@ -235,7 +242,7 @@ const resolvers = {
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) return null;
       const token = jwt.sign(
-        { id: user.id, role: user.role, isAdmin: user.isAdmin },
+        { id: user.id, email: user.email, role: user.role, isAdmin: user.isAdmin },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
@@ -303,6 +310,7 @@ const resolvers = {
 
     // ── User management (ADMIN only) ──────────────────────────────────────────
     createUser: async (_, { username, email, password, displayName, role }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, 'ADMIN');
       const hashed = await bcrypt.hash(password, 10);
       return await prisma.user.create({
@@ -318,6 +326,7 @@ const resolvers = {
     },
 
     updateUserRole: async (_, { userId, role }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, 'ADMIN');
       return await prisma.user.update({
         where: { id: userId },
@@ -326,17 +335,20 @@ const resolvers = {
     },
 
     deleteUser: async (_, { userId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, 'ADMIN');
       return await prisma.user.delete({ where: { id: userId } });
     },
 
     updateAvatar: async (_, { userId, avatarUrl }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireAuth(currentUser);
       return await prisma.user.update({ where: { id: userId }, data: { avatarUrl } });
     },
 
     // ── Firms ─────────────────────────────────────────────────────────────────
     addFirm: async (_, args, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const newFirm = await prisma.firm.create({
         data: { name: args.name, email: args.email, status: args.status || 'In Progress' },
@@ -346,6 +358,7 @@ const resolvers = {
     },
 
     updateFirm: async (_, { id, assignedCD, mail, ...rest }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const data = { ...rest };
       if (mail !== undefined) data.email = mail || null;
@@ -358,29 +371,34 @@ const resolvers = {
     },
 
     deleteFirm: async (_, { id }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...EXTERNE_OR_ADMIN);
       return await prisma.firm.delete({ where: { id } });
     },
 
     // ── Tasks ─────────────────────────────────────────────────────────────────
     addTask: async (_, { firmId, desc }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       return await prisma.task.create({ data: { desc, firmId, isDone: false } });
     },
 
     toggleTask: async (_, { taskId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const task = await prisma.task.findUnique({ where: { id: taskId } });
       return await prisma.task.update({ where: { id: taskId }, data: { isDone: !task.isDone } });
     },
 
     deleteTask: async (_, { taskId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       return await prisma.task.delete({ where: { id: taskId } });
     },
 
     // ── History ───────────────────────────────────────────────────────────────
     addHistory: async (_, { firmId, type, desc, author, date }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       return await prisma.history.create({
         data: { details: desc, author, timestamp: new Date(date), firmId },
@@ -388,12 +406,14 @@ const resolvers = {
     },
 
     deleteHistory: async (_, { historyId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       return await prisma.history.delete({ where: { id: historyId } });
     },
 
     // ── Contacts ──────────────────────────────────────────────────────────────
     addContact: async (_, { firmId, name, email, position, phone, isPrimary }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       if (isPrimary) {
         await prisma.contact.updateMany({ where: { firmId }, data: { isPrimary: false } });
@@ -404,6 +424,7 @@ const resolvers = {
     },
 
     updateContact: async (_, { contactId, name, email, position, phone, isPrimary }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       if (isPrimary === true) {
         const contact = await prisma.contact.findUnique({ where: { id: contactId } });
@@ -416,12 +437,14 @@ const resolvers = {
     },
 
     deleteContact: async (_, { contactId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       return await prisma.contact.delete({ where: { id: contactId } });
     },
 
     // ── Contracts ─────────────────────────────────────────────────────────────
     addContract: async (_, { firmId, eventId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const contract = await prisma.contract.create({
         data: { firmId, eventId },
@@ -431,6 +454,7 @@ const resolvers = {
     },
 
     deleteContract: async (_, { contractId }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const contract = await prisma.contract.delete({
         where: { id: contractId },
@@ -440,6 +464,7 @@ const resolvers = {
     },
 
     updateContractSteps: async (_, { contractId, steps }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const contract = await prisma.contract.update({
         where: { id: contractId },
@@ -451,6 +476,7 @@ const resolvers = {
 
     // ── Firm event status ──────────────────────────────────────────────────────
     setFirmEventStatus: async (_, { firmId, eventId, status }, { prisma, currentUser }) => {
+      requireNotDemo(currentUser);
       requireRole(currentUser, ...ALL_ROLES);
       const record = await prisma.firmEventStatus.upsert({
         where: { firmId_eventId: { firmId, eventId } },

@@ -969,6 +969,42 @@ input[type="checkbox"] {
 .login-forgot a { color: #526477; text-decoration: none; }
 .login-forgot a:hover { text-decoration: underline; }
 
+.login-demo-btn {
+  width: 100%;
+  padding: 11px;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.login-demo-btn:hover:not(:disabled) {
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+  background: var(--primary-glow);
+}
+.login-demo-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.demo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9998;
+  background: #f5f0ff;
+  border-bottom: 1px solid #d4bfff;
+  color: #5b21b6;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+body.demo-mode .dashboard-container { padding-top: 32px; }
+
 /* ─── Mobile Responsive (≤768px) ────────────────────────────────────────────
    Desktop layout is completely unaffected — these rules only fire on phones.
    TODO (security): revisit layout assumptions once A4 auth adds a login page.

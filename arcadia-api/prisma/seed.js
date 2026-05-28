@@ -15,6 +15,18 @@ async function main() {
   console.log('Seeding database...');
 
   // ─── USERS ──────────────────────────────────────────────────────────────────
+  const demoPw = await bcrypt.hash('demo123', 10);
+  await prisma.user.create({
+    data: {
+      email: 'demo@arcadia.crm',
+      username: 'demo',
+      password: demoPw,
+      role: 'Externe CD',
+      isAdmin: false,
+      displayName: 'Demo Guest',
+    },
+  });
+
   const admin = await prisma.user.create({
     data: {
       email: 'admin@arcadia.com',

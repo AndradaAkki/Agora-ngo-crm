@@ -4,7 +4,7 @@ import { useLoginLogic } from './useLoginLogic';
 import './App.css';
 
 function Login({ onLogin }) {
-  const { email, setEmail, password, setPassword, error, loading, handleSubmit } = useLoginLogic({ onLogin });
+  const { email, setEmail, password, setPassword, error, loading, demoLoading, handleSubmit, handleDemoLogin } = useLoginLogic({ onLogin });
 
   return (
     <div className="login-page">
@@ -46,10 +46,20 @@ function Login({ onLogin }) {
 
           {error && <p className="login-error">{error}</p>}
 
-          <button type="submit" className="btn-primary login-btn" disabled={loading}>
+          <button type="submit" className="btn-primary login-btn" disabled={loading || demoLoading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+
+        <div className="login-divider">or</div>
+
+        <button
+          className="login-demo-btn"
+          onClick={handleDemoLogin}
+          disabled={loading || demoLoading}
+        >
+          {demoLoading ? 'Loading demo…' : 'Try Demo'}
+        </button>
 
       </div>
     </div>
