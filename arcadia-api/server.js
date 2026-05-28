@@ -84,13 +84,8 @@ async function startServer() {
   }
 
   app.use(cors({ origin: allowedOrigins, credentials: true }));
-  app.use(express.static(path.join(__dirname, 'public')));
   app.use(passportMiddleware);
   if (oauthRouter) app.use('/auth', oauthRouter);
-
-  app.get(/^(?!\/graphql).*$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
 
   app.use(
     '/graphql',

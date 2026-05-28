@@ -22,7 +22,7 @@ export default defineConfig({
     } : undefined,
   },
   build: {
-    outDir: '../arcadia-api/public',
+    outDir: 'dist',
     emptyOutDir: true,
   },
   optimizeDeps: {
